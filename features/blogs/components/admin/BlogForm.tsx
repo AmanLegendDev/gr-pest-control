@@ -15,14 +15,13 @@ import BlogSEOSection from "@/features/blogs/components/admin/BlogSEOSection";
 import BlogPublishingSection from "@/features/blogs/components/admin/BlogPublishingSection";
 
 import {
-    BlogFormInput,
   blogSchema,
   type BlogFormValues,
 } from "@/features/blogs/schemas/blog-schema";
 
 import { createBlog } from "@/features/blogs/actions/createBlog";
 
-const DEFAULT_VALUES: BlogFormInput = {
+const DEFAULT_VALUES: BlogFormValues  = {
   title: "",
   slug: "",
   excerpt: "",
@@ -45,11 +44,7 @@ export default function BlogForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-const form = useForm<
-  BlogFormInput,
-  unknown,
-  BlogFormValues
->({
+const form = useForm<BlogFormValues>({
   resolver: zodResolver(blogSchema),
   defaultValues: DEFAULT_VALUES,
   mode: "onBlur",

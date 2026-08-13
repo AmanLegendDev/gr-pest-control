@@ -35,10 +35,7 @@ export const gallerySchema = z.object({
   title: z
     .string()
     .trim()
-    .min(
-      3,
-      "Gallery title must be at least 3 characters.",
-    )
+    .min(3, "Gallery title must be at least 3 characters.")
     .max(
       160,
       "Gallery title must be 160 characters or less.",
@@ -48,10 +45,7 @@ export const gallerySchema = z.object({
     .string()
     .trim()
     .min(1, "Slug is required.")
-    .max(
-      180,
-      "Slug must be 180 characters or less.",
-    )
+    .max(180, "Slug must be 180 characters or less.")
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug must contain only lowercase letters, numbers and hyphens.",
@@ -60,10 +54,7 @@ export const gallerySchema = z.object({
   description: z
     .string()
     .trim()
-    .min(
-      10,
-      "Description must be at least 10 characters.",
-    )
+    .min(10, "Description must be at least 10 characters.")
     .max(
       500,
       "Description must be 500 characters or less.",
@@ -71,16 +62,13 @@ export const gallerySchema = z.object({
 
   category: galleryCategorySchema,
 
+  // IMPORTANT: use the Zod schema here
   image: galleryImageSchema,
 
   seoTitle: z
     .string()
     .trim()
-    .max(
-      70,
-      "SEO title must be 70 characters or less.",
-    )
-    .default(""),
+    .max(70, "SEO title must be 70 characters or less."),
 
   seoDescription: z
     .string()
@@ -88,22 +76,18 @@ export const gallerySchema = z.object({
     .max(
       160,
       "SEO description must be 160 characters or less.",
-    )
-    .default(""),
+    ),
 
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
 
-  active: z.boolean().default(true),
+  active: z.boolean(),
 
   sortOrder: z
     .number()
-    .int("Sort order must be a whole number.")
-    .min(
-      0,
-      "Sort order cannot be negative.",
-    )
-    .default(0),
+    .int()
+    .min(0, "Sort order cannot be negative."),
 });
 
-export type GalleryFormValues =
-  z.infer<typeof gallerySchema>;
+export type GalleryFormValues = z.infer<
+  typeof gallerySchema
+>;

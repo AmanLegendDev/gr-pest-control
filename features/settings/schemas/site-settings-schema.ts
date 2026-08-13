@@ -27,28 +27,28 @@ const socialLinksSchema = z.object({
     .trim()
     .url("Please provide a valid Facebook URL.")
     .or(z.literal(""))
-    .default(""),
+    ,
 
   instagram: z
     .string()
     .trim()
     .url("Please provide a valid Instagram URL.")
     .or(z.literal(""))
-    .default(""),
+,
 
   youtube: z
     .string()
     .trim()
     .url("Please provide a valid YouTube URL.")
     .or(z.literal(""))
-    .default(""),
+    ,
 
   googleBusiness: z
     .string()
     .trim()
     .url("Please provide a valid Google Business URL.")
     .or(z.literal(""))
-    .default(""),
+  ,
 });
 
 const businessHoursSchema = z.object({
@@ -57,19 +57,11 @@ const businessHoursSchema = z.object({
     .trim()
     .min(1, "Day is required."),
 
-  open: z
-    .string()
-    .trim()
-    .default(""),
+open: z.string().trim(),
 
-  close: z
-    .string()
-    .trim()
-    .default(""),
+close: z.string().trim(),
 
-  closed: z
-    .boolean()
-    .default(false),
+closed: z.boolean(),
 });
 
 export const siteSettingsSchema = z.object({
@@ -92,7 +84,7 @@ export const siteSettingsSchema = z.object({
       500,
       "Short description must be 500 characters or less.",
     )
-    .default(""),
+    ,
 
   logo: siteLogoSchema.optional(),
 
@@ -124,7 +116,7 @@ export const siteSettingsSchema = z.object({
       30,
       "WhatsApp number must be 30 characters or less.",
     )
-    .default(""),
+    ,
 
   address: z
     .string()
@@ -133,7 +125,7 @@ export const siteSettingsSchema = z.object({
       300,
       "Address must be 300 characters or less.",
     )
-    .default(""),
+    ,
 
   city: z
     .string()
@@ -142,7 +134,7 @@ export const siteSettingsSchema = z.object({
       100,
       "City must be 100 characters or less.",
     )
-    .default(""),
+   ,
 
   state: z
     .string()
@@ -151,7 +143,7 @@ export const siteSettingsSchema = z.object({
       100,
       "State must be 100 characters or less.",
     )
-    .default(""),
+   ,
 
   pincode: z
     .string()
@@ -160,7 +152,7 @@ export const siteSettingsSchema = z.object({
       20,
       "Pincode must be 20 characters or less.",
     )
-    .default(""),
+    ,
 
   socialLinks: socialLinksSchema,
 
@@ -188,9 +180,7 @@ export const siteSettingsSchema = z.object({
       "Currency must be 10 characters or less.",
     ),
 
-  businessHours: z
-    .array(businessHoursSchema)
-    .default([]),
+businessHours: z.array(businessHoursSchema),
 
   siteTitle: z
     .string()
@@ -199,7 +189,7 @@ export const siteSettingsSchema = z.object({
       70,
       "Site title must be 70 characters or less.",
     )
-    .default(""),
+    ,
 
   siteDescription: z
     .string()
@@ -208,13 +198,13 @@ export const siteSettingsSchema = z.object({
       160,
       "Site description must be 160 characters or less.",
     )
-    .default(""),
+    ,
 
   favicon: siteLogoSchema.optional(),
 
   active: z
     .boolean()
-    .default(true),
+    ,
 });
 
 export type SiteSettingsFormValues =

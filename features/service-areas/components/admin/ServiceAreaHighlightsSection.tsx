@@ -5,30 +5,45 @@ import type {
   Control,
   FieldErrors,
   UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
 } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
 
 import type { ServiceAreaFormValues } from "@/features/service-areas/schemas/service-area-schema";
+
 
 interface ServiceAreaHighlightsSectionProps {
   control: Control<ServiceAreaFormValues>;
   register: UseFormRegister<ServiceAreaFormValues>;
   errors: FieldErrors<ServiceAreaFormValues>;
+  setValue: UseFormSetValue<ServiceAreaFormValues>;
+  watch: UseFormWatch<ServiceAreaFormValues>;
 }
 
 export default function ServiceAreaHighlightsSection({
   control,
   register,
   errors,
+  setValue,
+  watch,
 }: ServiceAreaHighlightsSectionProps) {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "highlights",
-  });
+const highlights = watch("highlights");
 
-  const addHighlight = () => {
-    append("");
-  };
+const addHighlight = () => {
+  setValue("highlights", [
+    ...highlights,
+    "",
+  ]);
+};
+
+const removeHighlight = (index: number) => {
+  setValue(
+    "highlights",
+    highlights.filter(
+      (_, itemIndex) => itemIndex !== index,
+    ),
+  );
+};
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -65,7 +80,7 @@ export default function ServiceAreaHighlightsSection({
 
       {/* Content */}
       <div className="p-5 sm:p-6">
-        {fields.length === 0 ? (
+        {highlights.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center">
             <CheckCircle2
               size={28}
@@ -93,12 +108,12 @@ export default function ServiceAreaHighlightsSection({
           </div>
         ) : (
           <div className="space-y-3">
-            {fields.map((field, index) => {
+            {highlights.map((_, index) => {
               const fieldError = errors.highlights?.[index];
 
               return (
                 <div
-                  key={field.id}
+                 key={`highlight-${index}`}
                   className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#39A935] shadow-sm">
@@ -147,7 +162,7 @@ export default function ServiceAreaHighlightsSection({
 
                   <button
                     type="button"
-                    onClick={() => remove(index)}
+                   onClick={() => removeHighlight(index)}
                     aria-label={`Remove highlight ${index + 1}`}
                     className="mt-6 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-white text-red-500 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-100"
                   >
@@ -159,7 +174,7 @@ export default function ServiceAreaHighlightsSection({
           </div>
         )}
 
-        {fields.length > 0 && (
+        {highlights.length > 0 && (
           <p className="mt-4 text-xs leading-5 text-[#64748B]">
             Keep highlights specific and factual. Avoid unsupported claims,
             guarantees, statistics or certifications.

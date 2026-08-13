@@ -3,14 +3,12 @@ import { z } from "zod";
 const optionalSeoTitle = z
   .string()
   .trim()
-  .max(70, "SEO title must be 70 characters or less.")
-  .default("");
+  .max(70, "SEO title must be 70 characters or less.");
 
 const optionalSeoDescription = z
   .string()
   .trim()
-  .max(160, "SEO description must be 160 characters or less.")
-  .default("");
+  .max(160, "SEO description must be 160 characters or less.");
 
 export const faqSchema = z.object({
   question: z
@@ -25,25 +23,23 @@ export const faqSchema = z.object({
     .min(5, "Answer must be at least 5 characters.")
     .max(2000, "Answer must be 2000 characters or less."),
 
-  category: z
-    .string()
-    .trim()
-    .max(100, "Category must be 100 characters or less.")
-    .default(""),
+category: z
+  .string()
+  .trim()
+  .max(100, "Category must be 100 characters or less."),
 
-  sortOrder: z
-    .number()
-    .int("Sort order must be a whole number.")
-    .min(0, "Sort order cannot be negative.")
-    .default(0),
+sortOrder: z
+  .number()
+  .int("Sort order must be a whole number.")
+  .min(0, "Sort order cannot be negative."),
 
-  featured: z.boolean().default(false),
+featured: z.boolean(),
 
-  active: z.boolean().default(true),
+active: z.boolean(),
 
-  seoTitle: optionalSeoTitle,
+seoTitle: optionalSeoTitle,
 
-  seoDescription: optionalSeoDescription,
+seoDescription: optionalSeoDescription,
 });
 
 export type FAQFormValues = z.infer<typeof faqSchema>;

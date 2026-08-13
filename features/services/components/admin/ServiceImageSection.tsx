@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Upload from "lucide-react/dist/esm/icons/upload";
+import {
+   ImageIcon,
+  Loader2,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import type {
   FieldErrors,

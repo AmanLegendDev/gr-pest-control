@@ -27,7 +27,11 @@ const DEFAULT_VALUES: GalleryFormValues = {
 
   category: "home",
 
-  image: undefined,
+image: {
+  url: "",
+  publicId: "",
+  alt: "",
+},
 
   seoTitle: "",
   seoDescription: "",

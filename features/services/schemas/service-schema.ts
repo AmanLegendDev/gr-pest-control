@@ -57,23 +57,37 @@ export const createServiceSchema = z.object({
 
   icon: z.string().trim().max(80).optional(),
 
-  pestTypes: z.array(z.string().trim().min(1).max(100)).default([]),
+ pestTypes: z.array(
+  z.string().trim().min(1).max(100),
+),
 
-  benefits: z.array(z.string().trim().min(1).max(300)).default([]),
+benefits: z.array(
+  z.string().trim().min(1).max(300),
+),
 
-  process: z.array(processStepSchema).default([]),
 
-  faqs: z.array(faqSchema).default([]),
+seoTitle: z
+  .string()
+  .trim()
+  .max(70),
 
-  seoTitle: z.string().trim().max(70).optional(),
+seoDescription: z
+  .string()
+  .trim()
+  .max(160),
 
-  seoDescription: z.string().trim().max(160).optional(),
+process: z.array(processStepSchema),
 
-  featured: z.boolean().default(false),
+faqs: z.array(faqSchema),
 
-  active: z.boolean().default(true),
+featured: z.boolean(),
 
-  sortOrder: z.number().int().min(0).default(0),
+active: z.boolean(),
+
+sortOrder: z
+  .number()
+  .int()
+  .min(0),
 });
 
 export type CreateServiceInput = z.infer<typeof createServiceSchema>;

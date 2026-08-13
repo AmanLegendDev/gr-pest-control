@@ -74,7 +74,7 @@ export const serviceAreaSchema = z.object({
         .min(1, "Highlight cannot be empty.")
         .max(200, "Highlight must be 200 characters or less."),
     )
-    .default([]),
+   ,
 
   nearbyAreas: z
     .array(
@@ -87,36 +87,28 @@ export const serviceAreaSchema = z.object({
           "Nearby area must be 120 characters or less.",
         ),
     )
-    .default([]),
+    ,
 
-  faqs: z
-    .array(serviceAreaFAQSchema)
-    .default([]),
+faqs: z.array(serviceAreaFAQSchema),
 
-  seoTitle: z
-    .string()
-    .trim()
-    .max(70, "SEO title must be 70 characters or less.")
-    .default(""),
+seoTitle: z
+  .string()
+  .trim()
+  .max(70, "SEO title must be 70 characters or less."),
 
-  seoDescription: z
-    .string()
-    .trim()
-    .max(
-      160,
-      "SEO description must be 160 characters or less.",
-    )
-    .default(""),
+seoDescription: z
+  .string()
+  .trim()
+  .max(160, "SEO description must be 160 characters or less."),
 
-  featured: z.boolean().default(false),
+featured: z.boolean(),
 
-  active: z.boolean().default(true),
+active: z.boolean(),
 
-  sortOrder: z
-    .number()
-    .int()
-    .min(0, "Sort order cannot be negative.")
-    .default(0),
+sortOrder: z
+  .number()
+  .int()
+  .min(0, "Sort order cannot be negative."),
 });
 
 export type ServiceAreaFormValues = z.infer<

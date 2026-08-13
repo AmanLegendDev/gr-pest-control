@@ -41,7 +41,7 @@ export const testimonialSchema = z.object({
       120,
       "Role must be 120 characters or less.",
     )
-    .default(""),
+  ,
 
   company: z
     .string()
@@ -50,7 +50,7 @@ export const testimonialSchema = z.object({
       160,
       "Company name must be 160 characters or less.",
     )
-    .default(""),
+    ,
 
   content: z
     .string()
@@ -83,7 +83,7 @@ export const testimonialSchema = z.object({
       120,
       "Location must be 120 characters or less.",
     )
-    .default(""),
+   ,
 
   image: testimonialImageSchema
     .optional(),
@@ -95,7 +95,7 @@ export const testimonialSchema = z.object({
       70,
       "SEO title must be 70 characters or less.",
     )
-    .default(""),
+   ,
 
   seoDescription: z
     .string()
@@ -104,15 +104,15 @@ export const testimonialSchema = z.object({
       160,
       "SEO description must be 160 characters or less.",
     )
-    .default(""),
+    ,
 
   featured: z
     .boolean()
-    .default(false),
+   ,
 
   active: z
     .boolean()
-    .default(true),
+    ,
 
   sortOrder: z
     .number()
@@ -121,7 +121,7 @@ export const testimonialSchema = z.object({
       0,
       "Sort order cannot be negative.",
     )
-    .default(0),
+    ,
 });
 
 export type TestimonialFormValues =

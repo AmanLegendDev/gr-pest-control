@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import {
+  ImageIcon,
+  Loader2,
+  Upload,
+  Trash2,
+} from "lucide-react";
 
 import {
   useWatch,

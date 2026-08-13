@@ -46,23 +46,20 @@ export const blogSchema = z.object({
     .trim()
     .min(20, "Blog content must be at least 20 characters.")
     .max(100000, "Blog content is too long."),
+category: z
+  .string()
+  .trim()
+  .max(100, "Category must be 100 characters or less."),
 
-  category: z
-    .string()
-    .trim()
-    .max(100, "Category must be 100 characters or less.")
-    .default(""),
-
-  tags: z
-    .array(
-      z
-        .string()
-        .trim()
-        .min(1, "Tag cannot be empty.")
-        .max(60, "Tag must be 60 characters or less."),
-    )
-    .max(20, "You can add up to 20 tags.")
-    .default([]),
+tags: z
+  .array(
+    z
+      .string()
+      .trim()
+      .min(1, "Tag cannot be empty.")
+      .max(60, "Tag must be 60 characters or less."),
+  )
+  .max(20, "You can add up to 20 tags."),
 
   author: z
     .string()
@@ -72,31 +69,26 @@ export const blogSchema = z.object({
 
   featuredImage: blogImageSchema.optional(),
 
-  seoTitle: z
-    .string()
-    .trim()
-    .max(70, "SEO title must be 70 characters or less.")
-    .default(""),
+seoTitle: z
+  .string()
+  .trim()
+  .max(70, "SEO title must be 70 characters or less."),
 
-  seoDescription: z
-    .string()
-    .trim()
-    .max(160, "SEO description must be 160 characters or less.")
-    .default(""),
+seoDescription: z
+  .string()
+  .trim()
+  .max(160, "SEO description must be 160 characters or less."),
 
-  featured: z.boolean().default(false),
+featured: z.boolean(),
 
-  published: z.boolean().default(false),
+published: z.boolean(),
 
-  publishedAt: z
-    .date()
-    .optional(),
+publishedAt: z.date().optional(),
 
-  sortOrder: z
-    .number()
-    .int("Sort order must be a whole number.")
-    .min(0, "Sort order cannot be negative.")
-    .default(0),
+sortOrder: z
+  .number()
+  .int("Sort order must be a whole number.")
+  .min(0, "Sort order cannot be negative."),
 });
 
 

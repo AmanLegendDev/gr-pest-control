@@ -27,7 +27,11 @@ const DEFAULT_VALUES: ServiceAreaFormValues = {
   slug: "",
   shortDescription: "",
   description: "",
-  image: undefined,
+  image: {
+  url: "",
+  publicId: "",
+  alt: "",
+},
   highlights: [],
   nearbyAreas: [],
   faqs: [],
@@ -119,17 +123,20 @@ const serviceAreaImage = watch("image");
   image={serviceAreaImage}
   altError={errors.image?.alt?.message}
 />
-        <ServiceAreaHighlightsSection
-          control={control}
-          register={register}
-          errors={errors}
-        />
-
-        <ServiceAreaNearbyAreasSection
-          control={control}
-          register={register}
-          errors={errors}
-        />
+      <ServiceAreaHighlightsSection
+  control={control}
+  register={register}
+  errors={errors}
+  setValue={setValue}
+  watch={watch}
+/>
+      <ServiceAreaNearbyAreasSection
+  control={control}
+  register={register}
+  errors={errors}
+  setValue={setValue}
+  watch={watch}
+/>
 
         <ServiceAreaFAQSection
           control={control}

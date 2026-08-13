@@ -31,9 +31,7 @@ export async function createGalleryItem(
   values: GalleryFormValues,
 ): Promise<CreateGalleryResult> {
   try {
-    const session = await getServerSession(
-      authOptions,
-    );
+    const session = await getServerSession(authOptions);
 
     if (
       !session?.user ||
@@ -45,14 +43,12 @@ export async function createGalleryItem(
       };
     }
 
-    const parsed =
-      gallerySchema.safeParse(values);
+    const parsed = gallerySchema.safeParse(values);
 
     if (!parsed.success) {
       return {
         success: false,
-        message:
-          "Please correct the highlighted fields.",
+        message: "Please correct the highlighted fields.",
         fieldErrors:
           parsed.error.flatten().fieldErrors,
       };
@@ -66,14 +62,13 @@ export async function createGalleryItem(
       .trim()
       .toLowerCase();
 
-    const existingItem =
-      await GalleryItem.findOne({
-        slug: normalizedSlug,
+    const existingItem = await GalleryItem.findOne({
+      slug: normalizedSlug,
+    })
+      .select({
+        _id: 1,
       })
-        .select({
-          _id: 1,
-        })
-        .lean();
+      .lean();
 
     if (existingItem) {
       return {
@@ -88,41 +83,36 @@ export async function createGalleryItem(
       };
     }
 
-    const galleryItem =
-      await GalleryItem.create({
-        title: data.title.trim(),
+    const galleryItem = await GalleryItem.create({
+      title: data.title.trim(),
 
-        slug: normalizedSlug,
+      slug: normalizedSlug,
 
-        description:
-          data.description.trim(),
+      description: data.description.trim(),
 
-        category: data.category,
+      category: data.category,
 
-        image: {
-          url: data.image.url,
-          publicId: data.image.publicId,
-          alt: data.image.alt.trim(),
-        },
+      image: {
+        url: data.image.url,
+        publicId: data.image.publicId,
+        alt: data.image.alt.trim(),
+      },
 
-        seoTitle:
-          data.seoTitle.trim(),
+      seoTitle: data.seoTitle.trim(),
 
-        seoDescription:
-          data.seoDescription.trim(),
+      seoDescription:
+        data.seoDescription.trim(),
 
-        featured: data.featured,
+      featured: data.featured,
 
-        active: data.active,
+      active: data.active,
 
-        sortOrder: data.sortOrder,
-      });
+      sortOrder: data.sortOrder,
+    });
 
     return {
       success: true,
-      galleryId: String(
-        galleryItem._id,
-      ),
+      galleryId: String(galleryItem._id),
     };
   } catch (error) {
     console.error(

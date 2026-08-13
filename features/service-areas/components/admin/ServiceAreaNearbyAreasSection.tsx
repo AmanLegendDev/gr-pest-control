@@ -5,8 +5,9 @@ import type {
   Control,
   FieldErrors,
   UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
 } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
 
 import type { ServiceAreaFormValues } from "@/features/service-areas/schemas/service-area-schema";
 
@@ -14,21 +15,28 @@ interface ServiceAreaNearbyAreasSectionProps {
   control: Control<ServiceAreaFormValues>;
   register: UseFormRegister<ServiceAreaFormValues>;
   errors: FieldErrors<ServiceAreaFormValues>;
+  setValue: UseFormSetValue<ServiceAreaFormValues>;
+  watch: UseFormWatch<ServiceAreaFormValues>;
 }
-
 export default function ServiceAreaNearbyAreasSection({
   control,
   register,
   errors,
+  setValue,
+  watch,
 }: ServiceAreaNearbyAreasSectionProps) {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "nearbyAreas",
-  });
+ const nearbyAreas = watch("nearbyAreas");
 
-  const addNearbyArea = () => {
-    append("");
-  };
+const addNearbyArea = () => {
+  setValue("nearbyAreas", [...nearbyAreas, ""]);
+};
+
+const removeNearbyArea = (index: number) => {
+  setValue(
+    "nearbyAreas",
+    nearbyAreas.filter((_, itemIndex) => itemIndex !== index),
+  );
+};
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -65,7 +73,7 @@ export default function ServiceAreaNearbyAreasSection({
 
       {/* Content */}
       <div className="p-5 sm:p-6">
-        {fields.length === 0 ? (
+        {nearbyAreas.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center">
             <MapPinned
               size={30}
@@ -93,13 +101,12 @@ export default function ServiceAreaNearbyAreasSection({
           </div>
         ) : (
           <div className="space-y-3">
-            {fields.map((field, index) => {
+            {nearbyAreas.map((_, index) => {
               const fieldError = errors.nearbyAreas?.[index];
 
               return (
                 <div
-                  key={field.id}
-                  className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3"
+key={`nearby-area-${index}`}                  className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#0878E8] shadow-sm">
                     <MapPinned
@@ -147,8 +154,7 @@ export default function ServiceAreaNearbyAreasSection({
 
                   <button
                     type="button"
-                    onClick={() => remove(index)}
-                    aria-label={`Remove nearby area ${index + 1}`}
+onClick={() => removeNearbyArea(index)}                    aria-label={`Remove nearby area ${index + 1}`}
                     className="mt-6 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-white text-red-500 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-100"
                   >
                     <Trash2 size={16} aria-hidden="true" />
@@ -159,7 +165,7 @@ export default function ServiceAreaNearbyAreasSection({
           </div>
         )}
 
-        {fields.length > 0 && (
+       {nearbyAreas.length > 0 && (
           <p className="mt-4 text-xs leading-5 text-[#64748B]">
             Only add locations that are genuinely relevant to this service
             area. Avoid creating artificial location lists for SEO.
