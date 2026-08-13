@@ -1,4 +1,11 @@
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form";
 import { FileText } from "lucide-react";
+
+import type { CreateServiceInput } from "../../schemas/service-schema";
 
 const categories = [
   "General Pest Control",
@@ -8,7 +15,29 @@ const categories = [
   "Other",
 ];
 
-export default function ServiceBasicInformation() {
+type ServiceBasicInformationProps = {
+  register: UseFormRegister<CreateServiceInput>;
+  errors: FieldErrors<CreateServiceInput>;
+  setValue: UseFormSetValue<CreateServiceInput>;
+  slugManuallyEdited: boolean;
+  setSlugManuallyEdited: (value: boolean) => void;
+};
+
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+export default function ServiceBasicInformation({
+  register,
+  errors,
+  setValue,
+  slugManuallyEdited,
+  setSlugManuallyEdited,
+}: ServiceBasicInformationProps) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
@@ -30,12 +59,13 @@ export default function ServiceBasicInformation() {
       </div>
 
       <div className="space-y-5 p-5 sm:p-6">
+        {/* SERVICE TITLE */}
         <div>
           <label
             htmlFor="title"
             className="mb-2 block text-sm font-semibold text-[#0F172A]"
           >
-            Service Title
+            Service Title *
           </label>
 
           <input
@@ -43,16 +73,33 @@ export default function ServiceBasicInformation() {
             type="text"
             placeholder="e.g. General Pest Control"
             className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#0F172A] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
+            {...register("title", {
+              onChange: (event) => {
+                if (!slugManuallyEdited) {
+                  setValue("slug", slugify(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              },
+            })}
           />
+
+          {errors.title && (
+            <p className="mt-1.5 text-sm text-red-600">
+              {errors.title.message}
+            </p>
+          )}
         </div>
 
+        {/* SLUG + CATEGORY */}
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <label
               htmlFor="slug"
               className="mb-2 block text-sm font-semibold text-[#0F172A]"
             >
-              Slug
+              Slug *
             </label>
 
             <input
@@ -60,11 +107,22 @@ export default function ServiceBasicInformation() {
               type="text"
               placeholder="general-pest-control"
               className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#0F172A] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
+              {...register("slug", {
+                onChange: () => {
+                  setSlugManuallyEdited(true);
+                },
+              })}
             />
 
             <p className="mt-1.5 text-xs text-[#64748B]">
               Used for the public service URL.
             </p>
+
+            {errors.slug && (
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.slug.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -72,17 +130,15 @@ export default function ServiceBasicInformation() {
               htmlFor="category"
               className="mb-2 block text-sm font-semibold text-[#0F172A]"
             >
-              Category
+              Category *
             </label>
 
             <select
               id="category"
-              defaultValue=""
               className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#0F172A] outline-none transition focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
+              {...register("category")}
             >
-              <option value="" disabled>
-                Select category
-              </option>
+              <option value="">Select category</option>
 
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -90,15 +146,22 @@ export default function ServiceBasicInformation() {
                 </option>
               ))}
             </select>
+
+            {errors.category && (
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.category.message}
+              </p>
+            )}
           </div>
         </div>
 
+        {/* SHORT DESCRIPTION */}
         <div>
           <label
             htmlFor="shortDescription"
             className="mb-2 block text-sm font-semibold text-[#0F172A]"
           >
-            Short Description
+            Short Description *
           </label>
 
           <textarea
@@ -106,19 +169,27 @@ export default function ServiceBasicInformation() {
             rows={3}
             placeholder="A concise description of this service..."
             className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm text-[#0F172A] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
+            {...register("shortDescription")}
           />
 
           <p className="mt-1.5 text-xs text-[#64748B]">
             Keep this concise. It will be used in service cards and previews.
           </p>
+
+          {errors.shortDescription && (
+            <p className="mt-1.5 text-sm text-red-600">
+              {errors.shortDescription.message}
+            </p>
+          )}
         </div>
 
+        {/* FULL DESCRIPTION */}
         <div>
           <label
             htmlFor="description"
             className="mb-2 block text-sm font-semibold text-[#0F172A]"
           >
-            Full Description
+            Full Description *
           </label>
 
           <textarea
@@ -126,7 +197,14 @@ export default function ServiceBasicInformation() {
             rows={8}
             placeholder="Describe the service in detail..."
             className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm leading-6 text-[#0F172A] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
+            {...register("description")}
           />
+
+          {errors.description && (
+            <p className="mt-1.5 text-sm text-red-600">
+              {errors.description.message}
+            </p>
+          )}
         </div>
       </div>
     </section>
