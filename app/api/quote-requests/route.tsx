@@ -97,36 +97,77 @@ export async function POST(
      * $inc makes this safe even when
      * multiple requests arrive together.
      */
-    const sequence =
-      await Sequence.findOneAndUpdate(
-        {
-          name: "quote-request",
-        },
-        {
-          $inc: {
-            value: 1,
-          },
-        },
-        {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        },
-      )
-        .lean()
-        .exec();
+const latestQuote =
+  await QuoteRequest.findOne({})
+    .sort({
+      requestNumber: -1,
+    })
+    .select({
+      requestNumber: 1,
+    })
+    .lean()
+    .exec();
 
-    if (!sequence) {
-      throw new Error(
-        "Unable to generate quote request number.",
-      );
-    }
+if (!latestQuote) {
+  await Sequence.findOneAndUpdate(
+    {
+      name: "quote-request",
+    },
+    {
+      $set: {
+        value: 0,
+      },
+    },
+    {
+      upsert: true,
+    },
+  );
+} else {
+  await Sequence.findOneAndUpdate(
+    {
+      name: "quote-request",
+    },
+    {
+      $max: {
+        value: latestQuote.requestNumber,
+      },
+    },
+    {
+      upsert: true,
+    },
+  );
+}
 
-    const requestNumber =
-      sequence.value;
+const sequence =
+  await Sequence.findOneAndUpdate(
+    {
+      name: "quote-request",
+    },
+    {
+      $inc: {
+        value: 1,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  )
+    .lean()
+    .exec();
 
-    const referenceNumber =
-      `GR-${requestNumber}`;
+if (!sequence) {
+  throw new Error(
+    "Unable to generate quote request number.",
+  );
+}
+
+const requestNumber =
+  sequence.value;
+
+const referenceNumber =
+  `GR-${requestNumber}`;
 
     /*
      * Create the actual request.
