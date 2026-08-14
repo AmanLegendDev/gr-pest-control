@@ -5,10 +5,8 @@ import mongoose, {
 } from "mongoose";
 
 export type QuoteRequestStatus =
-  | "new"
-  | "contacted"
-  | "quoted"
-  | "confirmed"
+  | "pending"
+  | "in-progress"
   | "completed"
   | "cancelled";
 
@@ -180,18 +178,16 @@ const QuoteRequestSchema =
       },
 
       status: {
-        type: String,
-        enum: [
-          "new",
-          "contacted",
-          "quoted",
-          "confirmed",
-          "completed",
-          "cancelled",
-        ],
-        default: "new",
-        index: true,
-      },
+  type: String,
+  enum: [
+    "pending",
+    "in-progress",
+    "completed",
+    "cancelled",
+  ],
+  default: "pending",
+  index: true,
+},
     },
     {
       timestamps: true,

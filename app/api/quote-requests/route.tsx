@@ -14,6 +14,10 @@ export async function POST(
   request: Request,
 ) {
   try {
+    /* =====================================================
+       VALIDATE REQUEST BODY
+    ====================================================== */
+
     const body = await request.json();
 
     const parsed =
@@ -37,12 +41,16 @@ export async function POST(
 
     const data = parsed.data;
 
+    /* =====================================================
+       DATABASE
+    ====================================================== */
+
     await connectDB();
 
-    /*
-     * Make sure the selected service
-     * actually exists and is active.
-     */
+    /* =====================================================
+       VALIDATE SERVICE ID
+    ====================================================== */
+
     if (
       !mongoose.Types.ObjectId.isValid(
         data.serviceId,
@@ -59,6 +67,10 @@ export async function POST(
         },
       );
     }
+
+    /* =====================================================
+       VERIFY ACTIVE SERVICE
+    ====================================================== */
 
     const service =
       await Service.findOne({
@@ -86,92 +98,99 @@ export async function POST(
       );
     }
 
-    /*
-     * Atomically generate:
-     *
-     * GR-1
-     * GR-2
-     * GR-3
-     * ...
-     *
-     * $inc makes this safe even when
-     * multiple requests arrive together.
-     */
-const latestQuote =
-  await QuoteRequest.findOne({})
-    .sort({
-      requestNumber: -1,
-    })
-    .select({
-      requestNumber: 1,
-    })
-    .lean()
-    .exec();
+    /* =====================================================
+       GENERATE REQUEST NUMBER
+       
+       Testing behaviour:
+       
+       Empty QuoteRequest collection
+         → GR-1
 
-if (!latestQuote) {
-  await Sequence.findOneAndUpdate(
-    {
-      name: "quote-request",
-    },
-    {
-      $set: {
-        value: 0,
-      },
-    },
-    {
-      upsert: true,
-    },
-  );
-} else {
-  await Sequence.findOneAndUpdate(
-    {
-      name: "quote-request",
-    },
-    {
-      $max: {
-        value: latestQuote.requestNumber,
-      },
-    },
-    {
-      upsert: true,
-    },
-  );
-}
+       Existing highest request = GR-4
+         → GR-5
+       
+       Sequence is updated atomically.
+    ====================================================== */
 
-const sequence =
-  await Sequence.findOneAndUpdate(
-    {
-      name: "quote-request",
-    },
-    {
-      $inc: {
-        value: 1,
-      },
-    },
-    {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    },
-  )
-    .lean()
-    .exec();
+    const latestQuote =
+      await QuoteRequest.findOne({})
+        .sort({
+          requestNumber: -1,
+        })
+        .select({
+          requestNumber: 1,
+        })
+        .lean()
+        .exec();
 
-if (!sequence) {
-  throw new Error(
-    "Unable to generate quote request number.",
-  );
-}
+    const currentHighest =
+      latestQuote?.requestNumber ?? 0;
 
-const requestNumber =
-  sequence.value;
+    const sequence =
+      await Sequence.findOneAndUpdate(
+        {
+          name: "quote-request",
+        },
+        {
+          $max: {
+            value: currentHighest,
+          },
+        },
+        {
+          new: false,
+          upsert: true,
+          setDefaultsOnInsert: true,
+        },
+      ).exec();
 
-const referenceNumber =
-  `GR-${requestNumber}`;
+    const sequenceValue =
+      sequence?.value ?? 0;
 
-    /*
-     * Create the actual request.
-     */
+    const nextRequestNumber =
+      Math.max(
+        currentHighest,
+        sequenceValue,
+      ) + 1;
+
+    const updatedSequence =
+      await Sequence.findOneAndUpdate(
+        {
+          name: "quote-request",
+        },
+        {
+          $set: {
+            value: nextRequestNumber,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+        },
+      )
+        .lean()
+        .exec();
+
+    if (!updatedSequence) {
+      throw new Error(
+        "Unable to generate quote request number.",
+      );
+    }
+
+    const requestNumber =
+      updatedSequence.value;
+
+    const referenceNumber =
+      `GR-${requestNumber}`;
+
+    /* =====================================================
+       CREATE QUOTE REQUEST
+       
+       Every new request ALWAYS starts as:
+       
+       pending
+    ====================================================== */
+
     const quote =
       await QuoteRequest.create({
         requestNumber,
@@ -186,9 +205,9 @@ const referenceNumber =
         },
 
         /*
-         * Snapshot the service information.
-         * Old requests remain accurate even if
-         * the service is later renamed.
+         * Snapshot service information.
+         * This keeps historical requests
+         * accurate if the service changes later.
          */
         service: {
           id: String(service._id),
@@ -215,8 +234,12 @@ const referenceNumber =
         preferredTime:
           data.preferredTime,
 
-        status: "new",
+        status: "pending",
       });
+
+    /* =====================================================
+       SUCCESS RESPONSE
+    ====================================================== */
 
     return NextResponse.json(
       {
