@@ -55,9 +55,11 @@ export default async function SuccessPage({
     );
   }
 
-  const settings = {
-    businessName:
-      settingsDoc.businessName,
+const settings = {
+  id: String(settingsDoc._id),
+
+  businessName:
+    settingsDoc.businessName,
 
     shortDescription:
       settingsDoc.shortDescription,
@@ -144,6 +146,14 @@ export default async function SuccessPage({
 
     active:
       settingsDoc.active,
+
+      createdAt: new Date(
+  settingsDoc.createdAt,
+).toISOString(),
+
+updatedAt: new Date(
+  settingsDoc.updatedAt,
+).toISOString(),
   };
 
   return (

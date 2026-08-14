@@ -17,7 +17,13 @@ export const metadata = {
     "Request a pest control quote from GR Pest Control.",
 };
 
+
+
 export default async function QuotePage() {
+
+    
+
+    
   await connectDB();
 
   const [services, settingsDoc] =
@@ -63,8 +69,10 @@ export default async function QuotePage() {
   }
 
   const settings = {
-    businessName:
-      settingsDoc.businessName,
+  id: String(settingsDoc._id),
+
+  businessName:
+    settingsDoc.businessName,
 
     shortDescription:
       settingsDoc.shortDescription,
@@ -143,6 +151,14 @@ export default async function QuotePage() {
       : undefined,
 
     active: settingsDoc.active,
+
+createdAt: new Date(
+  settingsDoc.createdAt,
+).toISOString(),
+
+updatedAt: new Date(
+  settingsDoc.updatedAt,
+).toISOString(),
   };
 
   const serviceOptions =
