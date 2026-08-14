@@ -93,7 +93,7 @@ export default function Hero({
             {/* CTA row */}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/#quote"
+                href="/quote"
                 className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full bg-[#0878E8] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,120,232,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#066BCF] hover:shadow-[0_18px_36px_rgba(8,120,232,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
               >
                 {settings.primaryCTA ||

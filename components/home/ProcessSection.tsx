@@ -255,7 +255,7 @@ export default function ProcessSection() {
           className="mt-12 flex justify-center"
         >
           <Link
-            href="/#quote"
+            href="/quote"
             className="group inline-flex min-h-[50px] items-center gap-3 rounded-full bg-[#0878E8] px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(8,120,232,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#066BCF] hover:shadow-[0_16px_34px_rgba(8,120,232,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
           >
             Get Started

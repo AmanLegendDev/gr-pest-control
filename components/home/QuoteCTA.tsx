@@ -255,7 +255,7 @@ export default function QuoteCTA({
               "
             >
               <Link
-                href="/#quote"
+                href="/quote"
                 className="
                   group
                   inline-flex

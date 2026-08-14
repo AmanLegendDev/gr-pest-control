@@ -211,7 +211,7 @@ export default function Footer({
           </div>
 
           <Link
-            href="/#quote"
+            href="/quote"
             className="
               group
               inline-flex

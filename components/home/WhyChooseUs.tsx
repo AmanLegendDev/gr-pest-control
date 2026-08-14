@@ -255,7 +255,7 @@ export default function WhyChooseUs({
             {/* CTA */}
             <div className="mt-8">
               <Link
-                href="/#quote"
+                href="/quote"
                 className="group inline-flex min-h-[50px] items-center gap-3 rounded-full bg-[#062B63] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(6,43,99,0.16)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0878E8] hover:shadow-[0_16px_34px_rgba(8,120,232,0.22)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
               >
                 {settings.primaryCTA ||

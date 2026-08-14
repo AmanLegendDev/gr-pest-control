@@ -115,22 +115,7 @@ export default function QuoteSummary({
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="max-w-2xl">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0878E8]">
-          Final Check
-        </p>
-
-        <h1 className="mt-2 text-2xl font-extrabold tracking-[-0.035em] text-[#062B63] sm:text-3xl">
-          Review your request.
-        </h1>
-
-        <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
-          Please check your details below.
-          Everything look right? Send your
-          quote request and our team will
-          contact you.
-        </p>
-      </div>
+     
 
       {/* Summary */}
       <div className="mt-8 space-y-4">
@@ -335,7 +320,7 @@ export default function QuoteSummary({
             </>
           ) : (
             <>
-              Confirm Quote Request
+             Confirm & Submit Request
 
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 transition-transform duration-200 group-hover:translate-x-0.5">
                 <ArrowRight

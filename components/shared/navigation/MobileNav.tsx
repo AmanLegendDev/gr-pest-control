@@ -73,7 +73,7 @@ export default function MobileNav({
       )}`
     : null;
 
-  const quoteHref = "/#quote";
+  const quoteHref = "/quote";
 
   /*
    * Lock the homepage while mobile menu is open.

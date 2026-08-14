@@ -1,215 +1,143 @@
-"use client";
+import { connectDB } from "@/lib/db/connect";
+import SiteSettings from "@/models/SiteSettings";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Navbar from "@/components/shared/navigation/Navbar";
+import Footer from "@/components/shared/footer/Footer";
+import QuoteReviewClient from "@/components/quote/QuoteReviewClient";
 
-import QuoteSummary from "@/components/quote/QuoteSummary";
+export const dynamic = "force-dynamic";
 
-import type { QuoteFormData } from "@/features/quote-requests/types/quoteRequest";
-
-interface ServiceOption {
-  id: string;
-  title: string;
-  slug: string;
-}
-
-const STORAGE_KEY = "gr-quote-request";
-
-export default function QuoteReviewPage() {
-  const router = useRouter();
-
-  const [data, setData] =
-    useState<QuoteFormData | null>(null);
-
-  const [services, setServices] =
-    useState<ServiceOption[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  useEffect(() => {
-    try {
-      const stored =
-        sessionStorage.getItem(
-          STORAGE_KEY,
-        );
-
-      if (!stored) {
-        router.replace("/quote");
-        return;
-      }
-
-      const parsed =
-        JSON.parse(stored) as QuoteFormData;
-
-      setData(parsed);
-    } catch {
-      sessionStorage.removeItem(
-        STORAGE_KEY,
-      );
-
-      router.replace("/quote");
-    } finally {
-      setLoading(false);
-    }
-  }, [router]);
-
-  /*
-   * Service title is fetched separately
-   * so the review page never trusts a
-   * client-supplied service name.
-   */
-  useEffect(() => {
-    async function loadServices() {
-      try {
-        const response = await fetch(
-          "/api/services/active",
-        );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const result =
-          await response.json();
-
-        setServices(
-          result.services ?? [],
-        );
-      } catch {
-        // Keep review page usable.
-      }
-    }
-
-    loadServices();
-  }, []);
-
-  const serviceTitle = useMemo(() => {
-    if (!data) {
-      return "";
-    }
-
-    return (
-      services.find(
-        (service) =>
-          service.id === data.serviceId,
-      )?.title ?? "Selected service"
-    );
-  }, [data, services]);
-
-  const handleEdit = (
-    step: 1 | 2 | 3,
-  ) => {
-    /*
-     * QuoteForm currently starts from step 1.
-     *
-     * We keep the existing data in
-     * sessionStorage and use a query
-     * parameter to tell QuoteForm where
-     * to resume.
-     */
-    router.push(
-      `/quote?step=${step}`,
-    );
-  };
-
- const handleConfirm = async () => {
-  if (!data || submitting) {
-    return;
-  }
-
-  setSubmitting(true);
-
-  try {
-    const response = await fetch(
-      "/api/quote-requests",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        result.message ||
-          "Unable to submit quote request.",
-      );
-    }
-
-    const referenceNumber =
-      result.data?.referenceNumber;
-
-    if (!referenceNumber) {
-      throw new Error(
-        "Quote was submitted, but no reference number was returned.",
-      );
-    }
-
-    sessionStorage.removeItem(
-      STORAGE_KEY,
-    );
-
-    router.replace(
-      `/quote/success?reference=${encodeURIComponent(
-        referenceNumber,
-      )}`,
-    );
-  } catch (error) {
-    console.error(
-      "Quote submission failed:",
-      error,
-    );
-
-    alert(
-      error instanceof Error
-        ? error.message
-        : "Something went wrong. Please try again.",
-    );
-  } finally {
-    setSubmitting(false);
-  }
+export const metadata = {
+  title: "Review Your Quote Request",
+  description:
+    "Review your GR Pest Control quote request before submitting.",
 };
 
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 pt-24">
-        <div className="text-center">
-          <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-[#0878E8]" />
+export default async function QuoteReviewPage() {
+  await connectDB();
 
-          <p className="mt-4 text-sm font-medium text-slate-500">
-            Loading your request...
-          </p>
-        </div>
+  const settingsDoc =
+    await SiteSettings.findOne({
+      active: true,
+    })
+      .lean()
+      .exec();
+
+  if (!settingsDoc) {
+    return (
+      <main className="min-h-screen bg-white">
+        <section className="flex min-h-screen items-center justify-center px-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-extrabold text-[#062B63]">
+              Website settings not configured
+            </h1>
+
+            <p className="mt-2 text-sm text-slate-500">
+              Please configure the website
+              settings from the admin panel.
+            </p>
+          </div>
+        </section>
       </main>
     );
   }
 
-  if (!data) {
-    return null;
-  }
+  const settings = {
+    businessName:
+      settingsDoc.businessName,
+
+    shortDescription:
+      settingsDoc.shortDescription,
+
+    logo: settingsDoc.logo
+      ? {
+          url: settingsDoc.logo.url,
+          publicId:
+            settingsDoc.logo.publicId,
+          alt: settingsDoc.logo.alt,
+        }
+      : undefined,
+
+    email: settingsDoc.email,
+
+    phone: settingsDoc.phone,
+
+    whatsapp:
+      settingsDoc.whatsapp,
+
+    address:
+      settingsDoc.address,
+
+    city:
+      settingsDoc.city,
+
+    state:
+      settingsDoc.state,
+
+    pincode:
+      settingsDoc.pincode,
+
+    socialLinks: {
+      facebook:
+        settingsDoc.socialLinks?.facebook ??
+        "",
+
+      instagram:
+        settingsDoc.socialLinks?.instagram ??
+        "",
+
+      youtube:
+        settingsDoc.socialLinks?.youtube ??
+        "",
+
+      googleBusiness:
+        settingsDoc.socialLinks
+          ?.googleBusiness ?? "",
+    },
+
+    primaryCTA:
+      settingsDoc.primaryCTA ||
+      "Get a Free Quote",
+
+    currency:
+      settingsDoc.currency || "INR",
+
+    businessHours:
+      settingsDoc.businessHours?.map(
+        (hour) => ({
+          day: hour.day,
+          open: hour.open,
+          close: hour.close,
+          closed: hour.closed,
+        }),
+      ) ?? [],
+
+    siteTitle:
+      settingsDoc.siteTitle,
+
+    siteDescription:
+      settingsDoc.siteDescription,
+
+    favicon: settingsDoc.favicon
+      ? {
+          url: settingsDoc.favicon.url,
+          publicId:
+            settingsDoc.favicon.publicId,
+          alt: settingsDoc.favicon.alt,
+        }
+      : undefined,
+
+    active:
+      settingsDoc.active,
+  };
 
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
-      <section className="px-4 pb-20 pt-32 sm:px-6 sm:pb-24 lg:px-8 lg:pt-36">
-        <div className="mx-auto max-w-4xl">
-          <QuoteSummary
-            data={data}
-            serviceTitle={serviceTitle}
-            onEditStep={handleEdit}
-            onConfirm={handleConfirm}
-            submitting={submitting}
-          />
-        </div>
-      </section>
+      <Navbar settings={settings} />
+
+      <QuoteReviewClient />
+
+      <Footer settings={settings} />
     </main>
   );
 }
