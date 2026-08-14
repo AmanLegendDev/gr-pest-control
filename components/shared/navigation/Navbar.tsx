@@ -96,7 +96,7 @@ export default function Navbar({
     </div>
   )}
 
-  <div className="block min-w-[190px]">
+<div className="min-w-0 flex-1">
   <div className="flex items-center whitespace-nowrap">
    <span className="text-[19px] font-bold tracking-[-0.025em] text-[#062B63] sm:text-[21px]">
   GR

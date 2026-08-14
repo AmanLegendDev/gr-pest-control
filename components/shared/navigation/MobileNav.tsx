@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 import type {
   MobileNavProps,
@@ -74,23 +75,81 @@ export default function MobileNav({
 
   const quoteHref = "/#quote";
 
+  /*
+   * Lock the homepage while mobile menu is open.
+   */
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const body = document.body;
+    const html = document.documentElement;
+
+    const previousBodyOverflow = body.style.overflow;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverscroll =
+      body.style.overscrollBehavior;
+    const previousHtmlOverscroll =
+      html.style.overscrollBehavior;
+
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+
+    body.style.overscrollBehavior = "none";
+    html.style.overscrollBehavior = "none";
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      html.style.overflow = previousHtmlOverflow;
+
+      body.style.overscrollBehavior =
+        previousBodyOverscroll;
+
+      html.style.overscrollBehavior =
+        previousHtmlOverscroll;
+    };
+  }, [open]);
+
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
+          {/* =====================================================
+              BACKDROP
+          ====================================================== */}
+
           <motion.button
             type="button"
             aria-label="Close navigation"
             onClick={onClose}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-[#062B63]/20 backdrop-blur-[3px]"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="
+              fixed
+              inset-0
+              z-40
+              cursor-default
+              bg-[#062B63]/25
+              backdrop-blur-[5px]
+              touch-none
+            "
           />
 
-          {/* Menu */}
+          {/* =====================================================
+              OUTER HAMBURGER CARD
+          ====================================================== */}
+
           <motion.aside
             id="mobile-navigation"
             role="dialog"
@@ -115,69 +174,203 @@ export default function MobileNav({
               duration: 0.3,
               ease: [0.22, 1, 0.36, 1],
             }}
-className="fixed inset-x-3 top-3 z-50 max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_24px_80px_rgba(6,43,99,0.16)] backdrop-blur-xl sm:inset-x-5 sm:top-5 sm:p-5"
->
-        <div className="flex items-center justify-between gap-3">
-  {/* Brand */}
-  <Link
-    href="/"
-    onClick={onClose}
-    aria-label={`${settings.businessName} home`}
-    className="flex min-w-0 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#0878E8] focus-visible:ring-offset-2"
-  >
-    {settings.logo?.url ? (
-      <img
-        src={settings.logo.url}
-        alt={
-          settings.logo.alt ||
-          settings.businessName
-        }
-        className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14"
-      />
-    ) : (
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-[#0878E8]">
-        GR
-      </div>
-    )}
+            className="
+              fixed
+              inset-x-3
+              top-3
+              z-50
 
-    <div className="min-w-0">
-      <div className="flex items-center whitespace-nowrap">
-        <span className="text-[15px] font-bold tracking-[-0.02em] text-[#062B63]">
-          GR
-        </span>
+              max-h-[calc(100dvh-1.5rem)]
 
-        <span className="text-[15px] font-bold tracking-[-0.02em] text-[#0FAF9F]">
-          {" "}
-          Pest Control
-        </span>
-      </div>
+              overflow-hidden
 
-      <p className="mt-0.5 whitespace-nowrap text-[8px] font-medium uppercase tracking-[0.14em] text-slate-500">
-        Sydney Pest Management
-      </p>
-    </div>
-  </Link>
+              rounded-[30px]
+              border
+              border-slate-200/90
 
-  {/* Close */}
-  <button
-    type="button"
-    onClick={onClose}
-    aria-label="Close menu"
-    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[#062B63] transition hover:border-slate-300 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-100"
-  >
-    <X
-      size={19}
-      strokeWidth={2.2}
-    />
-  </button>
-</div>
+              bg-white
 
-            {/* Navigation */}
-            <nav
-              aria-label="Mobile navigation links"
-              className="mt-6"
+              p-3
+
+              shadow-[0_30px_100px_rgba(6,43,99,0.22)]
+
+              sm:inset-x-5
+              sm:top-5
+              sm:max-h-[calc(100dvh-2.5rem)]
+              sm:p-4
+            "
+          >
+            {/* =================================================
+                HEADER — DOES NOT SCROLL
+            ================================================== */}
+
+            <div
+              className="
+                flex
+                shrink-0
+                items-center
+                justify-between
+                gap-3
+                rounded-[22px]
+                border
+                border-slate-100
+                bg-white
+                px-3
+                py-3
+                sm:px-4
+              "
             >
-              <div className="divide-y divide-slate-100">
+              {/* Brand */}
+
+              <Link
+                href="/"
+                onClick={onClose}
+                aria-label={`${settings.businessName} home`}
+                className="
+                  flex
+                  min-w-0
+                  items-center
+                  gap-2.5
+                  rounded-xl
+                  outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-[#0878E8]
+                  focus-visible:ring-offset-2
+                "
+              >
+                {settings.logo?.url ? (
+                  <img
+                    src={settings.logo.url}
+                    alt={
+                      settings.logo.alt ||
+                      settings.businessName
+                    }
+                    className="
+                      h-11
+                      w-11
+                      shrink-0
+                      object-contain
+                      sm:h-12
+                      sm:w-12
+                    "
+                  />
+                ) : (
+                  <div
+                    className="
+                      flex
+                      h-11
+                      w-11
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-blue-50
+                      text-sm
+                      font-bold
+                      text-[#0878E8]
+                    "
+                  >
+                    GR
+                  </div>
+                )}
+
+                <div className="min-w-0">
+                  <div className="flex items-center whitespace-nowrap">
+                    <span className="text-[15px] font-bold tracking-[-0.02em] text-[#062B63]">
+                      GR
+                    </span>
+
+                    <span className="text-[15px] font-bold tracking-[-0.02em] text-[#0FAF9F]">
+                      {" "}
+                      Pest Control
+                    </span>
+                  </div>
+
+                  <p className="mt-0.5 whitespace-nowrap text-[8px] font-medium uppercase tracking-[0.14em] text-slate-500">
+                    Sydney Pest Management
+                  </p>
+                </div>
+              </Link>
+
+              {/* Close */}
+
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close menu"
+                className="
+                  flex
+                  h-10
+                  w-10
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-slate-200
+                  bg-slate-50
+                  text-[#062B63]
+
+                  transition-all
+                  duration-200
+
+                  hover:border-slate-300
+                  hover:bg-slate-100
+
+                  active:scale-95
+
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-blue-100
+                "
+              >
+                <X
+                  size={19}
+                  strokeWidth={2.2}
+                />
+              </button>
+            </div>
+
+            {/* =================================================
+                NAVIGATION CARD
+                ONLY THIS AREA SCROLLS
+            ================================================== */}
+
+            <div
+              className="
+                mt-3
+
+                max-h-[min(52dvh,430px)]
+
+                overflow-y-auto
+                overscroll-contain
+
+                rounded-[24px]
+                border
+                border-slate-200/80
+
+                bg-slate-50/70
+
+                p-2
+
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]
+
+                [scrollbar-width:thin]
+                [-webkit-overflow-scrolling:touch]
+              "
+            >
+              {/* Small navigation heading */}
+
+              <div className="px-3 pb-2 pt-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Navigation
+                </p>
+              </div>
+
+              <nav
+                aria-label="Mobile navigation links"
+                className="space-y-1"
+              >
                 {NAVIGATION_ITEMS.map(
                   (item, index) => {
                     const isActive =
@@ -193,7 +386,7 @@ className="fixed inset-x-3 top-3 z-50 max-h-[calc(100dvh-1.5rem)] overflow-y-aut
                         key={item.href}
                         initial={{
                           opacity: 0,
-                          x: -12,
+                          x: -10,
                         }}
                         animate={{
                           opacity: 1,
@@ -201,9 +394,15 @@ className="fixed inset-x-3 top-3 z-50 max-h-[calc(100dvh-1.5rem)] overflow-y-aut
                         }}
                         transition={{
                           delay:
-                            0.04 + index * 0.035,
+                            0.04 +
+                            index * 0.035,
                           duration: 0.25,
-                          ease: [0.22, 1, 0.36, 1],
+                          ease: [
+                            0.22,
+                            1,
+                            0.36,
+                            1,
+                          ],
                         }}
                       >
                         <Link
@@ -214,138 +413,323 @@ className="fixed inset-x-3 top-3 z-50 max-h-[calc(100dvh-1.5rem)] overflow-y-aut
                               ? "page"
                               : undefined
                           }
-                          className={`group flex min-h-14 items-center justify-between gap-4 py-2.5 text-base font-semibold transition ${
-                            isActive
-                              ? "text-[#0878E8]"
-                              : "text-[#0F172A] hover:text-[#0878E8]"
-                          }`}
+                          className={`
+                            group
+                            flex
+                            min-h-[56px]
+                            items-center
+                            justify-between
+                            rounded-[18px]
+                            px-4
+
+                            text-[15px]
+                            font-semibold
+
+                            transition-all
+                            duration-200
+
+                            ${
+                              isActive
+                                ? "bg-white text-[#0878E8] shadow-sm ring-1 ring-slate-200/70"
+                                : "text-[#0F172A] hover:bg-white hover:text-[#0878E8] hover:shadow-sm"
+                            }
+                          `}
                         >
                           <span className="flex items-center gap-3">
                             <span
-                              className={`h-2 w-2 rounded-full transition ${
-                                isActive
-                                  ? "bg-[#0878E8]"
-                                  : "bg-transparent group-hover:bg-[#0878E8]/40"
-                              }`}
+                              className={`
+                                h-2
+                                w-2
+                                rounded-full
+
+                                transition-all
+                                duration-200
+
+                                ${
+                                  isActive
+                                    ? "bg-[#0878E8] shadow-[0_0_0_4px_rgba(8,120,232,0.08)]"
+                                    : "bg-transparent group-hover:bg-[#0878E8]/40"
+                                }
+                              `}
                             />
 
                             {item.label}
                           </span>
 
-                          <ChevronRight
-                            size={18}
-                            className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#0878E8]"
-                          />
+                          <span
+                            className={`
+                              flex
+                              h-8
+                              w-8
+                              items-center
+                              justify-center
+                              rounded-full
+
+                              transition-all
+                              duration-200
+
+                              ${
+                                isActive
+                                  ? "bg-blue-50 text-[#0878E8]"
+                                  : "text-slate-300 group-hover:bg-blue-50 group-hover:text-[#0878E8]"
+                              }
+                            `}
+                          >
+                            <ChevronRight
+                              size={17}
+                            />
+                          </span>
                         </Link>
                       </motion.div>
                     );
                   },
                 )}
-              </div>
-            </nav>
+              </nav>
+            </div>
 
-            {/* Primary CTA */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 10,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: 0.3,
-                duration: 0.25,
-              }}
-              className="mt-5"
-            >
-              <Link
-                href={quoteHref}
-                onClick={onClose}
-                className="group flex min-h-12 items-center justify-between rounded-2xl bg-[#0878E8] px-4 py-3.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,120,232,0.22)] transition hover:bg-[#066BCF] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2"
+            {/* =================================================
+                BOTTOM CONTENT
+                OUTER CARD DOES NOT SCROLL
+            ================================================== */}
+
+            <div className="shrink-0">
+              {/* Primary CTA */}
+
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: 8,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.25,
+                  duration: 0.25,
+                }}
+                className="mt-3"
               >
-                <span>
-                  {settings.primaryCTA ||
-                    "Get Free Quote"}
-                </span>
+                <Link
+                  href={quoteHref}
+                  onClick={onClose}
+                  className="
+                    group
+                    flex
+                    min-h-[56px]
+                    items-center
+                    justify-between
 
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 transition group-hover:bg-white/20">
-                  <ArrowUpRight size={17} />
-                </span>
-              </Link>
-            </motion.div>
+                    rounded-[20px]
 
-            {/* Quick Contact */}
-            <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              transition={{
-                delay: 0.36,
-                duration: 0.25,
-              }}
-              className="mt-4 grid grid-cols-2 gap-3"
-            >
-              <a
-                href={phoneHref}
-                className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-[#0F172A] transition hover:border-[#0878E8]/30 hover:bg-blue-50 hover:text-[#0878E8]"
+                    bg-[#0878E8]
+
+                    px-5
+                    py-3
+
+                    text-sm
+                    font-bold
+                    text-white
+
+                    shadow-[0_12px_28px_rgba(8,120,232,0.24)]
+
+                    transition-all
+                    duration-200
+
+                    hover:bg-[#066BCF]
+                    active:scale-[0.99]
+                  "
+                >
+                  <span>
+                    {settings.primaryCTA ||
+                      "Get Free Quote"}
+                  </span>
+
+                  <span
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-white/15
+                      transition
+                      group-hover:bg-white/20
+                    "
+                  >
+                    <ArrowUpRight size={17} />
+                  </span>
+                </Link>
+              </motion.div>
+
+              {/* Quick Contact */}
+
+              <motion.div
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                transition={{
+                  delay: 0.3,
+                  duration: 0.25,
+                }}
+                className="mt-3 grid grid-cols-2 gap-3"
               >
-                <Phone size={16} />
-                Call Us
-              </a>
-
-              {whatsappHref ? (
                 <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
-                >
-                  <MessageCircle size={16} />
-                  WhatsApp
-                </a>
-              ) : (
-                <a
-                  href={`mailto:${settings.email}`}
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-[#0F172A] transition hover:border-[#0878E8]/30 hover:bg-blue-50 hover:text-[#0878E8]"
-                >
-                  Email Us
-                </a>
-              )}
-            </motion.div>
+                  href={phoneHref}
+                  className="
+                    flex
+                    min-h-[50px]
+                    items-center
+                    justify-center
+                    gap-2
 
-            {/* Business identity */}
-            <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              transition={{
-                delay: 0.4,
-                duration: 0.25,
-              }}
-              className="mt-5 border-t border-slate-100 pt-4"
-            >
-              <p className="text-xs font-medium leading-5 text-slate-500">
-                {settings.shortDescription ||
-                  "Professional pest control solutions for homes and businesses."}
-              </p>
+                    rounded-[18px]
 
-              {settings.city && (
-                <p className="mt-1 text-xs font-semibold text-[#062B63]">
-                  Serving {settings.city}
-                  {settings.state
-                    ? `, ${settings.state}`
-                    : ""}
+                    border
+                    border-slate-200
+
+                    bg-slate-50
+
+                    px-3
+
+                    text-sm
+                    font-semibold
+                    text-[#0F172A]
+
+                    transition-all
+                    duration-200
+
+                    hover:border-[#0878E8]/30
+                    hover:bg-blue-50
+                    hover:text-[#0878E8]
+
+                    active:scale-[0.99]
+                  "
+                >
+                  <Phone size={16} />
+
+                  Call Us
+                </a>
+
+                {whatsappHref ? (
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      flex
+                      min-h-[50px]
+                      items-center
+                      justify-center
+                      gap-2
+
+                      rounded-[18px]
+
+                      border
+                      border-emerald-200
+
+                      bg-emerald-50
+
+                      px-3
+
+                      text-sm
+                      font-semibold
+                      text-emerald-700
+
+                      transition-all
+                      duration-200
+
+                      hover:bg-emerald-100
+
+                      active:scale-[0.99]
+                    "
+                  >
+                    <MessageCircle size={16} />
+
+                    WhatsApp
+                  </a>
+                ) : (
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="
+                      flex
+                      min-h-[50px]
+                      items-center
+                      justify-center
+                      gap-2
+
+                      rounded-[18px]
+
+                      border
+                      border-slate-200
+
+                      bg-slate-50
+
+                      px-3
+
+                      text-sm
+                      font-semibold
+                      text-[#0F172A]
+
+                      transition-all
+                      duration-200
+
+                      hover:border-[#0878E8]/30
+                      hover:bg-blue-50
+                      hover:text-[#0878E8]
+
+                      active:scale-[0.99]
+                    "
+                  >
+                    Email Us
+                  </a>
+                )}
+              </motion.div>
+
+              {/* Business identity */}
+
+              <motion.div
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                transition={{
+                  delay: 0.35,
+                  duration: 0.25,
+                }}
+                className="
+                  mt-3
+                  border-t
+                  border-slate-100
+                  px-1
+                  pt-3
+                "
+              >
+                <p className="text-xs font-medium leading-5 text-slate-500">
+                  {settings.shortDescription ||
+                    "Professional pest control solutions for homes and businesses."}
                 </p>
-              )}
-            </motion.div>
+
+                {settings.city && (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#0FAF9F]" />
+
+                    <p className="text-xs font-semibold text-[#062B63]">
+                      Serving {settings.city}
+                      {settings.state
+                        ? `, ${settings.state}`
+                        : ""}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </div>
           </motion.aside>
         </>
       )}

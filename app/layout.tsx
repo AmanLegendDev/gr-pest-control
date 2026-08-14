@@ -1,9 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
-
-import Navigation from "@/components/shared/navigation/Navigation";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,17 +17,41 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Professional pest control solutions for homes and businesses in Shimla.",
+    "Professional pest control solutions for homes and businesses in Sydney.",
 
   robots: {
     index: true,
     follow: true,
   },
 
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
+  openGraph: {
+    title: "GR Pest Control",
+    description:
+      "Professional pest control solutions for homes and businesses in Sydney.",
+    type: "website",
+    siteName: "GR Pest Control",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "GR Pest Control — Professional Pest Control in Sydney",
+      },
+    ],
   },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "GR Pest Control",
+    description:
+      "Professional pest control solutions for homes and businesses in Sydney.",
+    images: ["/og-image.jpg"],
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -41,8 +63,6 @@ export default function RootLayout({
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-white font-sans text-[#0F172A]">
-        <Navigation />
-
         <main className="min-h-full flex-1">
           {children}
         </main>
