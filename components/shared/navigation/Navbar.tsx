@@ -66,7 +66,7 @@ export default function Navbar({
   const [mobileOpen, setMobileOpen] =
     useState(false);
 
-  const quoteHref = "/#quote";
+  const quoteHref = "/quote";
 
   return (
     <>
