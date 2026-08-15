@@ -1,18 +1,181 @@
-import Navigation from "@/components/shared/navigation/Navigation";
+import { connectDB } from "@/lib/db/connect";
+import SiteSettings from "@/models/SiteSettings";
+
+import Navbar from "@/components/shared/navigation/Navbar";
 import Footer from "@/components/shared/footer/Footer";
-import UnderDevelopment from "@/components/shared/UnderDevelopment";
 
-export default function ServicesPage() {
+import ServicesHero from "@/components/services/ServicesHero";
+import ServicesPageClient from "@/components/services/ServicesPageClient";
+
+import { getActiveServices } from "@/features/services/queries/getActiveServices";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Pest Control Services",
+  description:
+    "Explore professional pest control services from GR Pest Control for homes and businesses.",
+};
+
+export default async function ServicesPage() {
+  await connectDB();
+
+  const [services, settingsDoc] =
+    await Promise.all([
+      getActiveServices(),
+
+      SiteSettings.findOne({
+        active: true,
+      })
+        .lean()
+        .exec(),
+    ]);
+
+  if (!settingsDoc) {
+    return (
+      <main className="min-h-screen bg-white">
+        <section className="flex min-h-screen items-center justify-center px-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-extrabold text-[#062B63]">
+              Website settings not configured
+            </h1>
+
+            <p className="mt-2 text-sm text-slate-500">
+              Please configure the website
+              settings from the admin panel.
+            </p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  const settings = {
+    id: String(settingsDoc._id),
+
+    businessName:
+      settingsDoc.businessName,
+
+    shortDescription:
+      settingsDoc.shortDescription,
+
+    logo: settingsDoc.logo
+      ? {
+          url: settingsDoc.logo.url,
+          publicId:
+            settingsDoc.logo.publicId,
+          alt: settingsDoc.logo.alt,
+        }
+      : undefined,
+
+    email: settingsDoc.email,
+
+    phone: settingsDoc.phone,
+
+    whatsapp:
+      settingsDoc.whatsapp,
+
+    address:
+      settingsDoc.address,
+
+    city:
+      settingsDoc.city,
+
+    state:
+      settingsDoc.state,
+
+    pincode:
+      settingsDoc.pincode,
+
+    socialLinks: {
+      facebook:
+        settingsDoc.socialLinks
+          ?.facebook ?? "",
+
+      instagram:
+        settingsDoc.socialLinks
+          ?.instagram ?? "",
+
+      youtube:
+        settingsDoc.socialLinks
+          ?.youtube ?? "",
+
+      googleBusiness:
+        settingsDoc.socialLinks
+          ?.googleBusiness ?? "",
+    },
+
+    primaryCTA:
+      settingsDoc.primaryCTA ||
+      "Get a Free Quote",
+
+    currency:
+      settingsDoc.currency || "INR",
+
+    businessHours:
+      settingsDoc.businessHours?.map(
+        (hour) => ({
+          day: hour.day,
+          open: hour.open,
+          close: hour.close,
+          closed: hour.closed,
+        }),
+      ) ?? [],
+
+    siteTitle:
+      settingsDoc.siteTitle,
+
+    siteDescription:
+      settingsDoc.siteDescription,
+
+    favicon: settingsDoc.favicon
+      ? {
+          url: settingsDoc.favicon.url,
+          publicId:
+            settingsDoc.favicon.publicId,
+          alt: settingsDoc.favicon.alt,
+        }
+      : undefined,
+
+    active:
+      settingsDoc.active,
+
+    createdAt: new Date(
+      settingsDoc.createdAt,
+    ).toISOString(),
+
+    updatedAt: new Date(
+      settingsDoc.updatedAt,
+    ).toISOString(),
+  };
+
   return (
-    <main className="min-h-screen bg-white">
-      <Navigation />
+    <main className="min-h-screen bg-[#F8FAFC]">
+      {/* =========================
+          NAVIGATION
+      ========================== */}
 
-      <UnderDevelopment
-        title="Professional Pest Control Services"
-        description="We’re preparing a detailed overview of our professional pest control services for homes and businesses across Sydney."
+      <Navbar settings={settings} />
+
+      {/* =========================
+          HERO
+      ========================== */}
+
+      <ServicesHero />
+
+      {/* =========================
+          SERVICES
+      ========================== */}
+
+      <ServicesPageClient
+        services={services}
       />
 
-     
+      {/* =========================
+          FOOTER
+      ========================== */}
+
+      <Footer settings={settings} />
     </main>
   );
 }

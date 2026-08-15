@@ -46,6 +46,11 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: "FAQs",
     href: "/faq",
   },
+
+       {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
 function normalizePhone(value: string) {

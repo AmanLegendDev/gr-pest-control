@@ -91,3 +91,19 @@ sortOrder: z
 });
 
 export type CreateServiceInput = z.infer<typeof createServiceSchema>;
+
+export const updateServiceSchema =
+  createServiceSchema.extend({
+    id: z
+      .string()
+      .trim()
+      .min(1, "Service ID is required.")
+      .refine(
+        (value) =>
+          /^[a-f\d]{24}$/i.test(value),
+        "Invalid service ID.",
+      ),
+  });
+
+export type UpdateServiceInput =
+  z.infer<typeof updateServiceSchema>;

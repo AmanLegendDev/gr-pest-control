@@ -42,6 +42,10 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: "About",
     href: "/About",
   },
+     {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
 function isActiveRoute(
