@@ -1,3 +1,10 @@
+"use server";
+
+import mongoose from "mongoose";
+
+import { requireAdmin } from "@/lib/auth/require-admin";
+import { connectDB } from "@/lib/db/connect";
+
 import QuoteRequest, {
   type QuoteRequestStatus,
 } from "@/models/QuoteRequest";
@@ -16,48 +23,80 @@ export type QuoteRequestStatusUpdateResult =
       message: string;
     };
 
+/**
+ * Allowed status flow:
+ *
+ * pending
+ *   ├── in-progress
+ *   └── cancelled
+ *
+ * in-progress
+ *   ├── completed
+ *   └── cancelled
+ *
+ * completed → locked
+ * cancelled → locked
+ */
 const ALLOWED_TRANSITIONS: Record<
   QuoteRequestStatus,
   readonly QuoteRequestStatus[]
 > = {
-  pending: [
-    "in-progress",
-    "cancelled",
-  ],
+  pending: ["in-progress", "cancelled"],
 
-  "in-progress": [
-    "completed",
-    "cancelled",
-  ],
+  "in-progress": ["completed", "cancelled"],
 
   completed: [],
 
   cancelled: [],
 };
 
+const VALID_STATUSES: readonly QuoteRequestStatus[] = [
+  "pending",
+  "in-progress",
+  "completed",
+  "cancelled",
+];
+
 export async function updateQuoteRequestStatus(
   id: string,
   nextStatus: QuoteRequestStatus,
 ): Promise<QuoteRequestStatusUpdateResult> {
-  /*
-   * Make sure this status transition
-   * is actually allowed.
-   */
-  const allowedStatuses =
-    ALLOWED_TRANSITIONS[nextStatus];
+  try {
+    /* =========================
+       ADMIN AUTH
+    ========================== */
 
-  /*
-   * The status itself must be valid.
-   */
-  if (!allowedStatuses) {
-    return {
-      success: false,
-      message: "Invalid request status.",
-    };
-  }
+    await requireAdmin();
 
-  const request =
-    await QuoteRequest.findById(id)
+    /* =========================
+       ID VALIDATION
+    ========================== */
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return {
+        success: false,
+        message: "Invalid quote request ID.",
+      };
+    }
+
+    /* =========================
+       STATUS VALIDATION
+    ========================== */
+
+    if (!VALID_STATUSES.includes(nextStatus)) {
+      return {
+        success: false,
+        message: "Invalid request status.",
+      };
+    }
+
+    /* =========================
+       DATABASE
+    ========================== */
+
+    await connectDB();
+
+    const request = await QuoteRequest.findById(id)
       .select({
         _id: 1,
         referenceNumber: 1,
@@ -65,61 +104,64 @@ export async function updateQuoteRequestStatus(
       })
       .exec();
 
-  if (!request) {
+    if (!request) {
+      return {
+        success: false,
+        message: "Quote request not found.",
+      };
+    }
+
+    /* =========================
+       CURRENT STATUS
+    ========================== */
+
+    const currentStatus = request.status;
+
+    const allowedNextStatuses =
+      ALLOWED_TRANSITIONS[currentStatus];
+
+    /* =========================
+       TRANSITION VALIDATION
+    ========================== */
+
+    if (!allowedNextStatuses.includes(nextStatus)) {
+      return {
+        success: false,
+        message: `Request cannot move from "${currentStatus}" to "${nextStatus}".`,
+      };
+    }
+
+    /* =========================
+       UPDATE
+    ========================== */
+
+    request.status = nextStatus;
+
+    await request.save();
+
+    /* =========================
+       RESULT
+    ========================== */
+
+    return {
+      success: true,
+
+      request: {
+        id: String(request._id),
+        referenceNumber: request.referenceNumber,
+        status: request.status,
+      },
+    };
+  } catch (error) {
+    console.error(
+      "UPDATE_QUOTE_REQUEST_STATUS_ERROR",
+      error,
+    );
+
     return {
       success: false,
-      message: "Quote request not found.",
+      message:
+        "Unable to update quote request status right now.",
     };
   }
-
-  const currentStatus =
-    request.status;
-
-  /*
-   * Check whether the requested
-   * transition is allowed.
-   *
-   * Example:
-   *
-   * pending → in-progress    ✓
-   * pending → cancelled      ✓
-   * pending → completed      ✗
-   *
-   * in-progress → completed  ✓
-   * in-progress → cancelled  ✓
-   */
-  const transitions =
-    ALLOWED_TRANSITIONS[
-      currentStatus
-    ];
-
-  if (
-    !transitions.includes(nextStatus)
-  ) {
-    return {
-      success: false,
-      message: `Request cannot move from "${currentStatus}" to "${nextStatus}".`,
-    };
-  }
-
-  /*
-   * Update only after the transition
-   * has passed validation.
-   */
-  request.status = nextStatus;
-
-  await request.save();
-
-  return {
-    success: true,
-
-    request: {
-      id: String(request._id),
-
-      referenceNumber:
-        request.referenceNumber,
-
-      status: request.status,
-    },
-  };
 }

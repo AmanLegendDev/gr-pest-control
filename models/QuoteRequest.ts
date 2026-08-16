@@ -4,6 +4,10 @@ import mongoose, {
   Schema,
 } from "mongoose";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
 export type QuoteRequestStatus =
   | "pending"
   | "in-progress"
@@ -14,15 +18,23 @@ export type QuotePropertyType =
   | "residential"
   | "commercial";
 
+/* =========================================================
+   SERVICE SNAPSHOT
+========================================================= */
+
 export interface IQuoteServiceSnapshot {
   id: string;
   title: string;
   slug: string;
 }
 
+/* =========================================================
+   QUOTE REQUEST
+========================================================= */
+
 export interface IQuoteRequest
   extends Document {
-    requestNumber: number;
+  requestNumber: number;
   referenceNumber: string;
 
   customer: {
@@ -47,9 +59,19 @@ export interface IQuoteRequest
 
   status: QuoteRequestStatus;
 
+  /**
+   * Archived requests remain in the database
+   * but are hidden from the normal admin listing.
+   */
+  archived: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
+
+/* =========================================================
+   SERVICE SNAPSHOT SCHEMA
+========================================================= */
 
 const QuoteServiceSnapshotSchema =
   new Schema<IQuoteServiceSnapshot>(
@@ -80,18 +102,29 @@ const QuoteServiceSnapshotSchema =
     },
   );
 
+/* =========================================================
+   MAIN SCHEMA
+========================================================= */
+
 const QuoteRequestSchema =
   new Schema<IQuoteRequest>(
     {
+      /* -----------------------------------------------------
+         Request Number
+      ----------------------------------------------------- */
 
+      requestNumber: {
+        type: Number,
+        required: true,
+        unique: true,
+        index: true,
+        min: 1,
+      },
 
-        requestNumber: {
-  type: Number,
-  required: true,
-  unique: true,
-  index: true,
-  min: 1,
-},
+      /* -----------------------------------------------------
+         Public Reference Number
+      ----------------------------------------------------- */
+
       referenceNumber: {
         type: String,
         required: true,
@@ -101,6 +134,10 @@ const QuoteRequestSchema =
         uppercase: true,
         maxlength: 40,
       },
+
+      /* -----------------------------------------------------
+         Customer
+      ----------------------------------------------------- */
 
       customer: {
         name: {
@@ -126,10 +163,18 @@ const QuoteRequestSchema =
         },
       },
 
+      /* -----------------------------------------------------
+         Service Snapshot
+      ----------------------------------------------------- */
+
       service: {
         type: QuoteServiceSnapshotSchema,
         required: true,
       },
+
+      /* -----------------------------------------------------
+         Property
+      ----------------------------------------------------- */
 
       propertyType: {
         type: String,
@@ -139,6 +184,10 @@ const QuoteRequestSchema =
         ],
         required: true,
       },
+
+      /* -----------------------------------------------------
+         Location
+      ----------------------------------------------------- */
 
       location: {
         suburb: {
@@ -156,12 +205,20 @@ const QuoteRequestSchema =
         },
       },
 
+      /* -----------------------------------------------------
+         Pest Problem
+      ----------------------------------------------------- */
+
       pestProblem: {
         type: String,
         required: true,
         trim: true,
         maxlength: 1000,
       },
+
+      /* -----------------------------------------------------
+         Preferred Schedule
+      ----------------------------------------------------- */
 
       preferredDate: {
         type: String,
@@ -177,37 +234,85 @@ const QuoteRequestSchema =
         maxlength: 100,
       },
 
+      /* -----------------------------------------------------
+         Status
+      ----------------------------------------------------- */
+
       status: {
-  type: String,
-  enum: [
-    "pending",
-    "in-progress",
-    "completed",
-    "cancelled",
-  ],
-  default: "pending",
-  index: true,
-},
+        type: String,
+        enum: [
+          "pending",
+          "in-progress",
+          "completed",
+          "cancelled",
+        ],
+        default: "pending",
+        index: true,
+      },
+
+      /* -----------------------------------------------------
+         Archive
+      ----------------------------------------------------- */
+
+      archived: {
+        type: Boolean,
+        default: false,
+        index: true,
+      },
     },
     {
       timestamps: true,
     },
   );
 
-/*
- * Admin listing.
+/* =========================================================
+   INDEXES
+========================================================= */
+
+/**
+ * Main admin listing.
+ *
+ * Example:
+ * active requests
+ * → newest first
  */
 QuoteRequestSchema.index({
-  status: 1,
+  archived: 1,
   createdAt: -1,
 });
 
-/*
+/**
+ * Status dashboard filtering.
+ *
+ * Example:
+ * pending requests
+ * completed requests
+ * cancelled requests
+ */
+QuoteRequestSchema.index({
+  status: 1,
+  archived: 1,
+  createdAt: -1,
+});
+
+/**
  * Recent requests.
  */
 QuoteRequestSchema.index({
   createdAt: -1,
 });
+
+/**
+ * Customer search support.
+ */
+QuoteRequestSchema.index({
+  "customer.name": 1,
+  "customer.phone": 1,
+});
+
+/* =========================================================
+   DEVELOPMENT / HOT RELOAD SAFE MODEL
+========================================================= */
 
 const QuoteRequest: Model<IQuoteRequest> =
   mongoose.models.QuoteRequest ||

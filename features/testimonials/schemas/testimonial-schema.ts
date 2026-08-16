@@ -40,8 +40,7 @@ export const testimonialSchema = z.object({
     .max(
       120,
       "Role must be 120 characters or less.",
-    )
-  ,
+    ),
 
   company: z
     .string()
@@ -49,8 +48,7 @@ export const testimonialSchema = z.object({
     .max(
       160,
       "Company name must be 160 characters or less.",
-    )
-    ,
+    ),
 
   content: z
     .string()
@@ -67,14 +65,8 @@ export const testimonialSchema = z.object({
   rating: z
     .number()
     .int("Rating must be a whole number.")
-    .min(
-      1,
-      "Rating must be at least 1.",
-    )
-    .max(
-      5,
-      "Rating cannot be greater than 5.",
-    ),
+    .min(1, "Rating must be at least 1.")
+    .max(5, "Rating cannot be greater than 5."),
 
   location: z
     .string()
@@ -82,11 +74,9 @@ export const testimonialSchema = z.object({
     .max(
       120,
       "Location must be 120 characters or less.",
-    )
-   ,
+    ),
 
-  image: testimonialImageSchema
-    .optional(),
+  image: testimonialImageSchema.optional(),
 
   seoTitle: z
     .string()
@@ -94,8 +84,7 @@ export const testimonialSchema = z.object({
     .max(
       70,
       "SEO title must be 70 characters or less.",
-    )
-   ,
+    ),
 
   seoDescription: z
     .string()
@@ -103,16 +92,11 @@ export const testimonialSchema = z.object({
     .max(
       160,
       "SEO description must be 160 characters or less.",
-    )
-    ,
+    ),
 
-  featured: z
-    .boolean()
-   ,
+  featured: z.boolean(),
 
-  active: z
-    .boolean()
-    ,
+  active: z.boolean(),
 
   sortOrder: z
     .number()
@@ -120,9 +104,22 @@ export const testimonialSchema = z.object({
     .min(
       0,
       "Sort order cannot be negative.",
-    )
-    ,
+    ),
 });
+
+export const updateTestimonialSchema =
+  testimonialSchema.extend({
+    id: z
+      .string()
+      .trim()
+      .regex(
+        /^[a-f\d]{24}$/i,
+        "Invalid testimonial ID.",
+      ),
+  });
 
 export type TestimonialFormValues =
   z.infer<typeof testimonialSchema>;
+
+export type UpdateTestimonialInput =
+  z.infer<typeof updateTestimonialSchema>;

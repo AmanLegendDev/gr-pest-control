@@ -1,134 +1,91 @@
-import {
-  Settings,
-} from "lucide-react";
-import {
-  getServerSession,
-} from "next-auth";
-import {
-  redirect,
-} from "next/navigation";
-
-import {
-  authOptions,
-} from "@/lib/auth/auth-options";
-
-import {
-  getSiteSettings,
-} from "@/features/settings/queries/getSiteSettings";
+import { Settings } from "lucide-react";
 
 import SettingsForm from "@/features/settings/components/admin/SettingsForm";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 
-export const metadata = {
-  title:
-    "Website Settings | GR Pest Control Admin",
+export const dynamic = "force-dynamic";
 
-  description:
-    "Manage website and business settings.",
-};
+export default async function AdminSettingsPage() {
+  const settings = await getSiteSettings();
 
-export default async function SettingsPage() {
-  const session =
-    await getServerSession(
-      authOptions,
-    );
+  const initialSettings = settings
+    ? {
+        businessName: settings.businessName,
+        shortDescription: settings.shortDescription,
 
-  if (
-    !session?.user ||
-    session.user.role !== "ADMIN"
-  ) {
-    redirect("/admin/login");
-  }
+        logo: settings.logo
+          ? {
+              url: settings.logo.url,
+              publicId: settings.logo.publicId,
+              alt: settings.logo.alt,
+            }
+          : undefined,
 
-  const settings =
-    await getSiteSettings();
+        email: settings.email,
+        phone: settings.phone,
+        whatsapp: settings.whatsapp,
 
-  const initialSettings =
-    settings
-      ? {
-          businessName:
-            settings.businessName,
+        address: settings.address,
+        city: settings.city,
+        state: settings.state,
+        pincode: settings.pincode,
 
-          shortDescription:
-            settings.shortDescription,
+        socialLinks: {
+          facebook:
+            settings.socialLinks?.facebook ?? "",
+          instagram:
+            settings.socialLinks?.instagram ?? "",
+          youtube:
+            settings.socialLinks?.youtube ?? "",
+          googleBusiness:
+            settings.socialLinks?.googleBusiness ?? "",
+        },
 
-          logo: settings.logo,
+        primaryCTA: settings.primaryCTA,
+        currency: settings.currency,
 
-          email: settings.email,
+        businessHours:
+          settings.businessHours.map((hours) => ({
+            day: hours.day,
+            open: hours.open,
+            close: hours.close,
+            closed: hours.closed,
+          })),
 
-          phone: settings.phone,
+        siteTitle: settings.siteTitle,
+        siteDescription: settings.siteDescription,
 
-          whatsapp:
-            settings.whatsapp,
+        favicon: settings.favicon
+          ? {
+              url: settings.favicon.url,
+              publicId: settings.favicon.publicId,
+              alt: settings.favicon.alt,
+            }
+          : undefined,
 
-          address:
-            settings.address,
-
-          city:
-            settings.city,
-
-          state:
-            settings.state,
-
-          pincode:
-            settings.pincode,
-
-          socialLinks: {
-            facebook:
-              settings.socialLinks
-                ?.facebook ?? "",
-
-            instagram:
-              settings.socialLinks
-                ?.instagram ?? "",
-
-            youtube:
-              settings.socialLinks
-                ?.youtube ?? "",
-
-            googleBusiness:
-              settings.socialLinks
-                ?.googleBusiness ?? "",
-          },
-
-          primaryCTA:
-            settings.primaryCTA,
-
-          currency:
-            settings.currency,
-
-          businessHours:
-            settings.businessHours,
-
-          siteTitle:
-            settings.siteTitle,
-
-          siteDescription:
-            settings.siteDescription,
-
-          favicon:
-            settings.favicon,
-
-          active:
-            settings.active,
-        }
-      : null;
+        active: settings.active,
+      }
+    : null;
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-7">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0878E8]">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* =========================
+            PAGE HEADER
+        ========================== */}
+
+        <div className="mb-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0878E8]">
               <Settings
-                size={21}
+                size={22}
                 aria-hidden="true"
               />
             </div>
 
             <div>
               <p className="text-sm font-semibold text-[#0878E8]">
-                Administration
+                Website Configuration
               </p>
 
               <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#062B63] sm:text-3xl">
@@ -136,17 +93,21 @@ export default async function SettingsPage() {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#64748B]">
-                Manage your business identity, contact information,
-                social links, working hours and website SEO from one place.
+                Manage your business information,
+                contact details, social links, business
+                hours, branding, SEO and website status
+                from one place.
               </p>
             </div>
           </div>
         </div>
 
+        {/* =========================
+            SETTINGS FORM
+        ========================== */}
+
         <SettingsForm
-          initialSettings={
-            initialSettings
-          }
+          initialSettings={initialSettings}
         />
       </div>
     </main>

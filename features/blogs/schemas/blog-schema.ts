@@ -97,3 +97,16 @@ export type BlogFormInput =
 
 export type BlogFormValues =
   z.output<typeof blogSchema>;
+
+  export const updateBlogSchema = blogSchema.extend({
+  id: z
+    .string()
+    .trim()
+    .regex(
+      /^[a-f\d]{24}$/i,
+      "Invalid blog ID.",
+    ),
+});
+
+export type UpdateBlogInput =
+  z.infer<typeof updateBlogSchema>;

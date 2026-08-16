@@ -64,7 +64,7 @@ const BOOKING_CARDS = [
     key: "total",
     title: "Total Requests",
     description: "All quote requests received.",
-    href: "/admin/quote-requests",
+    href: "/admin/quote-requests?status=all",
     icon: LayoutDashboard,
     tone: "navy",
   },

@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { connectDB } from "@/lib/db/connect";
 import ServiceArea from "@/models/ServiceArea";
+import { revalidatePath } from "next/cache";
 
 import {
   serviceAreaSchema,
@@ -148,6 +149,11 @@ export async function createServiceArea(
     // --------------------------------------------------
     // 8. SUCCESS
     // --------------------------------------------------
+
+
+    revalidatePath("/service-areas");
+revalidatePath("/admin");
+revalidatePath("/admin/service-areas");
 
     return {
       success: true,

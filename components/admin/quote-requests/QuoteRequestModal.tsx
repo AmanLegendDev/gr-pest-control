@@ -9,22 +9,75 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type {
-  IQuoteRequest,
   QuoteRequestStatus,
 } from "@/models/QuoteRequest";
 
-import QuoteRequestActions from "./QuoteRequestActions";
+import {
+  adminQuoteRequestSchema,
+  type AdminQuoteRequestFormValues,
+} from "@/features/quote-requests/schemas/admin-quote-request-schema";
+
+import { updateQuoteRequest } from "@/features/quote-requests/actions/updateQuoteRequest";
+
+interface AdminQuoteRequest {
+  id: string;
+
+  requestNumber: number;
+
+  referenceNumber: string;
+
+  customer: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+
+  service: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+
+  propertyType:
+    | "residential"
+    | "commercial";
+
+  location: {
+    suburb: string;
+    address: string;
+  };
+
+  pestProblem: string;
+
+  preferredDate: string;
+  preferredTime: string;
+
+  status: QuoteRequestStatus;
+
+  archived?: boolean;
+
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface QuoteRequestModalProps {
-  request: IQuoteRequest | null;
+  request: AdminQuoteRequest | null;
+
   onClose: () => void;
 
   onStatusChange: (
     id: string,
     status: QuoteRequestStatus,
   ) => void;
+
+  initialEditMode?: boolean;
+
+  onUpdated?: () => void;
 
   updating?: boolean;
 }
@@ -44,9 +97,7 @@ function formatDate(value: string) {
   }).format(date);
 }
 
-function formatCreatedAt(
-  value: Date | string,
-) {
+function formatCreatedAt(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -104,58 +155,148 @@ function getStatusClasses(
   }
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <p
-        className="
-          text-[10px]
-          font-extrabold
-          uppercase
-          tracking-[0.12em]
-          text-slate-400
-        "
-      >
-        {label}
-      </p>
+const inputClassName =
+  "mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-[#062B63] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100";
 
-      <p
-        className="
-          mt-1.5
-          break-words
-          text-sm
-          font-semibold
-          leading-6
-          text-[#062B63]
-        "
-      >
-        {value || "Not provided"}
-      </p>
-    </div>
-  );
-}
+const textareaClassName =
+  "mt-1.5 min-h-[120px] w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium leading-6 text-[#062B63] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100";
+
+const errorClassName =
+  "mt-1.5 text-xs font-semibold text-red-600";
 
 export default function QuoteRequestModal({
   request,
   onClose,
   onStatusChange,
+  initialEditMode = false,
+  onUpdated,
   updating = false,
 }: QuoteRequestModalProps) {
-  if (!request) {
-    return null;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: {
+      errors,
+      isSubmitting,
+    },
+  } =
+    useForm<AdminQuoteRequestFormValues>({
+      resolver: zodResolver(
+        adminQuoteRequestSchema,
+      ),
+
+      defaultValues: {
+        customer: {
+          name: "",
+          phone: "",
+          email: "",
+        },
+
+        propertyType: "residential",
+
+        location: {
+          suburb: "",
+          address: "",
+        },
+
+        pestProblem: "",
+
+        preferredDate: "",
+
+        preferredTime: "",
+
+        status: "pending",
+
+        archived: false,
+      },
+    });
+
+  useEffect(() => {
+    if (!request) {
+      return;
+    }
+
+    reset({
+      customer: {
+        name: request.customer.name,
+        phone: request.customer.phone,
+        email: request.customer.email ?? "",
+      },
+
+      propertyType:
+        request.propertyType,
+
+      location: {
+        suburb: request.location.suburb,
+        address: request.location.address,
+      },
+
+      pestProblem:
+        request.pestProblem,
+
+      preferredDate:
+        request.preferredDate,
+
+      preferredTime:
+        request.preferredTime,
+
+      status: request.status,
+
+      archived:
+        request.archived ?? false,
+    });
+  }, [request, reset]);
+
+if (!request) {
+  return null;
+}
+
+const editMode = initialEditMode;
+const requestId = request.id;
+
+  async function onSubmit(
+    values: AdminQuoteRequestFormValues,
+  ) {
+    try {
+ const result =
+  await updateQuoteRequest(
+    requestId,
+    values,
+  );
+      if (!result.success) {
+        if (
+          result.fieldErrors
+        ) {
+          console.error(
+            "QUOTE_REQUEST_VALIDATION_ERRORS",
+            result.fieldErrors,
+          );
+        }
+
+        window.alert(
+          result.message,
+        );
+
+        return;
+      }
+
+      window.alert(
+        "Quote request updated successfully.",
+      );
+
+      onUpdated?.();
+    } catch (error) {
+      console.error(
+        "QUOTE_REQUEST_UPDATE_ERROR",
+        error,
+      );
+
+      window.alert(
+        "Unable to update the quote request right now.",
+      );
+    }
   }
-
-  const statusLabel =
-    getStatusLabel(request.status);
-
-  const statusClasses =
-    getStatusClasses(request.status);
 
   return (
     <div
@@ -189,18 +330,13 @@ export default function QuoteRequestModal({
           bg-white
           shadow-[0_30px_100px_rgba(15,23,42,0.22)]
           sm:max-h-[90vh]
-          sm:max-w-2xl
+          sm:max-w-3xl
           sm:rounded-[28px]
         "
       >
-        {/* =========================
-            HEADER
-        ========================== */}
+        {/* HEADER */}
         <div
           className="
-            sticky
-            top-0
-            z-10
             shrink-0
             border-b
             border-slate-100
@@ -221,7 +357,7 @@ export default function QuoteRequestModal({
                     rounded-full
                     bg-blue-50
                     px-3
-                    py-1
+                    py-1.5
                     text-[11px]
                     font-extrabold
                     tracking-[0.04em]
@@ -241,10 +377,14 @@ export default function QuoteRequestModal({
                     py-1
                     text-[10px]
                     font-bold
-                    ${statusClasses}
+                    ${getStatusClasses(
+                      request.status,
+                    )}
                   `}
                 >
-                  {statusLabel}
+                  {getStatusLabel(
+                    request.status,
+                  )}
                 </span>
               </div>
 
@@ -252,7 +392,6 @@ export default function QuoteRequestModal({
                 id="quote-request-modal-title"
                 className="
                   mt-2
-                  truncate
                   text-lg
                   font-extrabold
                   tracking-[-0.02em]
@@ -260,14 +399,19 @@ export default function QuoteRequestModal({
                   sm:text-xl
                 "
               >
-                Quote request details
+                {editMode
+                  ? "Edit Quote Request"
+                  : "Quote Request Details"}
               </h2>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close request details"
+              disabled={
+                isSubmitting ||
+                updating
+              }
               className="
                 flex
                 h-10
@@ -284,9 +428,8 @@ export default function QuoteRequestModal({
                 hover:border-slate-300
                 hover:bg-slate-50
                 hover:text-[#062B63]
-                focus:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-blue-200
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
               <X size={18} />
@@ -294,359 +437,565 @@ export default function QuoteRequestModal({
           </div>
         </div>
 
-        {/* =========================
-            SCROLLABLE CONTENT
-        ========================== */}
-        <div
-          className="
-            min-h-0
-            flex-1
-            overflow-y-auto
-            overscroll-contain
-            px-5
-            py-5
-            sm:px-6
-            sm:py-6
-          "
+        {/* CONTENT */}
+        <form
+          onSubmit={handleSubmit(
+            onSubmit,
+          )}
+          className="min-h-0 flex-1 overflow-y-auto"
         >
-          {/* Customer */}
-          <section>
-            <div className="mb-4 flex items-center gap-3">
-              <div
-                className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-blue-50
-                  text-[#0878E8]
-                "
-              >
-                <User size={17} />
-              </div>
-
-              <div>
-                <p
+          <div
+            className="
+              space-y-7
+              px-5
+              py-5
+              sm:px-6
+              sm:py-6
+            "
+          >
+            {/* CUSTOMER */}
+            <section>
+              <div className="mb-4 flex items-center gap-3">
+                <div
                   className="
-                    text-[10px]
-                    font-extrabold
-                    uppercase
-                    tracking-[0.13em]
-                    text-slate-400
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-blue-50
+                    text-[#0878E8]
                   "
                 >
-                  Customer
-                </p>
+                  <User size={17} />
+                </div>
 
-                <h3 className="text-sm font-extrabold text-[#062B63]">
-                  Contact details
-                </h3>
-              </div>
-            </div>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                    Customer
+                  </p>
 
-            <div
-              className="
-                grid
-                gap-5
-                rounded-2xl
-                border
-                border-slate-100
-                bg-slate-50/60
-                p-4
-                sm:grid-cols-2
-                sm:p-5
-              "
-            >
-              <DetailRow
-                label="Full name"
-                value={request.customer.name}
-              />
-
-              <div className="flex items-start gap-2.5">
-                <Phone
-                  size={15}
-                  className="mt-1 shrink-0 text-slate-400"
-                />
-
-                <DetailRow
-                  label="Phone number"
-                  value={request.customer.phone}
-                />
+                  <h3 className="text-sm font-extrabold text-[#062B63]">
+                    Contact details
+                  </h3>
+                </div>
               </div>
 
-              <div className="flex items-start gap-2.5 sm:col-span-2">
-                <Mail
-                  size={15}
-                  className="mt-1 shrink-0 text-slate-400"
-                />
-
-                <DetailRow
-                  label="Email address"
-                  value={request.customer.email}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Service */}
-          <section className="mt-7">
-            <div className="mb-4 flex items-center gap-3">
               <div
                 className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-blue-50
-                  text-[#0878E8]
+                  grid
+                  gap-5
+                  rounded-2xl
+                  border
+                  border-slate-100
+                  bg-slate-50/60
+                  p-4
+                  sm:grid-cols-2
+                  sm:p-5
                 "
               >
-                <MapPin size={17} />
-              </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-600">
+                    Full name
+                  </label>
 
-              <div>
-                <p
-                  className="
-                    text-[10px]
-                    font-extrabold
-                    uppercase
-                    tracking-[0.13em]
-                    text-slate-400
-                  "
-                >
+                  <input
+                    {...register(
+                      "customer.name",
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+
+                  {errors.customer
+                    ?.name && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors.customer
+                          .name
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-600">
+                    Phone number
+                  </label>
+
+                  <div className="relative">
+                    <Phone
+                      size={15}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                    <input
+                      {...register(
+                        "customer.phone",
+                      )}
+                      className={`${inputClassName} pl-10`}
+                    />
+                  </div>
+
+                  {errors.customer
+                    ?.phone && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors.customer
+                          .phone
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-600">
+                    Email address
+                  </label>
+
+                  <div className="relative">
+                    <Mail
+                      size={15}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                    <input
+                      type="email"
+                      {...register(
+                        "customer.email",
+                      )}
+                      className={`${inputClassName} pl-10`}
+                    />
+                  </div>
+
+                  {errors.customer
+                    ?.email && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors.customer
+                          .email
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* SERVICE */}
+            <section>
+              <div className="mb-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
                   Service
                 </p>
 
-                <h3 className="text-sm font-extrabold text-[#062B63]">
-                  Service & property
+                <h3 className="mt-1 text-sm font-extrabold text-[#062B63]">
+                  Selected service
                 </h3>
               </div>
-            </div>
 
-            <div
-              className="
-                grid
-                gap-5
-                rounded-2xl
-                border
-                border-slate-100
-                bg-slate-50/60
-                p-4
-                sm:grid-cols-2
-                sm:p-5
-              "
-            >
-              <DetailRow
-                label="Selected service"
-                value={request.service.title}
-              />
-
-              <DetailRow
-                label="Property type"
-                value={
-                  request.propertyType ===
-                  "residential"
-                    ? "Residential"
-                    : "Commercial"
-                }
-              />
-            </div>
-          </section>
-
-          {/* Location */}
-          <section className="mt-7">
-            <div className="mb-4 flex items-center gap-3">
               <div
                 className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-blue-50
-                  text-[#0878E8]
+                  rounded-2xl
+                  border
+                  border-slate-100
+                  bg-slate-50/60
+                  p-4
+                  sm:p-5
                 "
               >
-                <MapPin size={17} />
-              </div>
+                <div className="flex items-center gap-3">
+                  <MapPin
+                    size={17}
+                    className="text-[#0878E8]"
+                  />
 
-              <div>
-                <p
-                  className="
-                    text-[10px]
-                    font-extrabold
-                    uppercase
-                    tracking-[0.13em]
-                    text-slate-400
-                  "
-                >
-                  Location
+                  <div>
+                    <p className="text-sm font-extrabold text-[#062B63]">
+                      {request.service.title}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                      Service cannot be changed from this edit form.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* PROPERTY */}
+            <section>
+              <div className="mb-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                  Property
                 </p>
 
-                <h3 className="text-sm font-extrabold text-[#062B63]">
-                  Service location
+                <h3 className="mt-1 text-sm font-extrabold text-[#062B63]">
+                  Property type
                 </h3>
               </div>
-            </div>
 
-            <div
-              className="
-                rounded-2xl
-                border
-                border-slate-100
-                bg-slate-50/60
-                p-4
-                sm:p-5
-              "
-            >
-              <div className="grid gap-5 sm:grid-cols-2">
-                <DetailRow
-                  label="Suburb"
-                  value={
-                    request.location.suburb
-                  }
-                />
-
-                <DetailRow
-                  label="Address"
-                  value={
-                    request.location.address
-                  }
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Pest problem */}
-          <section className="mt-7">
-            <div className="mb-4">
-              <p
-                className="
-                  text-[10px]
-                  font-extrabold
-                  uppercase
-                  tracking-[0.13em]
-                  text-slate-400
-                "
-              >
-                Pest problem
-              </p>
-
-              <h3 className="mt-1 text-sm font-extrabold text-[#062B63]">
-                Customer description
-              </h3>
-            </div>
-
-            <div
-              className="
-                rounded-2xl
-                border
-                border-slate-100
-                bg-slate-50/60
-                p-4
-                sm:p-5
-              "
-            >
-              <p
-                className="
-                  whitespace-pre-wrap
-                  text-sm
-                  leading-6
-                  text-slate-600
-                "
-              >
-                {request.pestProblem ||
-                  "No description provided."}
-              </p>
-            </div>
-          </section>
-
-          {/* Schedule */}
-          <section className="mt-7">
-            <div className="mb-4 flex items-center gap-3">
               <div
                 className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-blue-50
-                  text-[#0878E8]
+                  rounded-2xl
+                  border
+                  border-slate-100
+                  bg-slate-50/60
+                  p-4
+                  sm:p-5
                 "
               >
-                <CalendarDays size={17} />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label
+                    className="
+                      flex
+                      cursor-pointer
+                      items-center
+                      gap-3
+                      rounded-xl
+                      border
+                      border-slate-200
+                      bg-white
+                      p-3.5
+                    "
+                  >
+                    <input
+                      type="radio"
+                      value="residential"
+                      {...register(
+                        "propertyType",
+                      )}
+                    />
+
+                    <span className="text-sm font-bold text-[#062B63]">
+                      Residential
+                    </span>
+                  </label>
+
+                  <label
+                    className="
+                      flex
+                      cursor-pointer
+                      items-center
+                      gap-3
+                      rounded-xl
+                      border
+                      border-slate-200
+                      bg-white
+                      p-3.5
+                    "
+                  >
+                    <input
+                      type="radio"
+                      value="commercial"
+                      {...register(
+                        "propertyType",
+                      )}
+                    />
+
+                    <span className="text-sm font-bold text-[#062B63]">
+                      Commercial
+                    </span>
+                  </label>
+                </div>
               </div>
+            </section>
 
-              <div>
-                <p
-                  className="
-                    text-[10px]
-                    font-extrabold
-                    uppercase
-                    tracking-[0.13em]
-                    text-slate-400
-                  "
-                >
-                  Schedule
-                </p>
-
-                <h3 className="text-sm font-extrabold text-[#062B63]">
-                  Preferred appointment
-                </h3>
-              </div>
-            </div>
-
-            <div
-              className="
-                grid
-                gap-4
-                rounded-2xl
-                border
-                border-blue-100
-                bg-blue-50/50
-                p-4
-                sm:grid-cols-2
-                sm:p-5
-              "
-            >
-              <div className="flex items-start gap-3">
-                <CalendarDays
-                  size={16}
-                  className="mt-1 shrink-0 text-[#0878E8]"
+            {/* LOCATION */}
+            <section>
+              <div className="mb-4 flex items-center gap-3">
+                <MapPin
+                  size={18}
+                  className="text-[#0878E8]"
                 />
 
-                <DetailRow
-                  label="Preferred date"
-                  value={formatDate(
-                    request.preferredDate,
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                    Location
+                  </p>
+
+                  <h3 className="text-sm font-extrabold text-[#062B63]">
+                    Service location
+                  </h3>
+                </div>
+              </div>
+
+              <div
+                className="
+                  grid
+                  gap-5
+                  rounded-2xl
+                  border
+                  border-slate-100
+                  bg-slate-50/60
+                  p-4
+                  sm:grid-cols-2
+                  sm:p-5
+                "
+              >
+                <div>
+                  <label className="text-xs font-bold text-slate-600">
+                    Suburb
+                  </label>
+
+                  <input
+                    {...register(
+                      "location.suburb",
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+
+                  {errors.location
+                    ?.suburb && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors.location
+                          .suburb
+                          .message
+                      }
+                    </p>
                   )}
-                />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-600">
+                    Address
+                  </label>
+
+                  <input
+                    {...register(
+                      "location.address",
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+
+                  {errors.location
+                    ?.address && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors.location
+                          .address
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* PEST PROBLEM */}
+            <section>
+              <div className="mb-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                  Pest problem
+                </p>
+
+                <h3 className="mt-1 text-sm font-extrabold text-[#062B63]">
+                  Customer description
+                </h3>
               </div>
 
-              <div className="flex items-start gap-3">
-                <Clock3
-                  size={16}
-                  className="mt-1 shrink-0 text-[#0878E8]"
+              <textarea
+                {...register(
+                  "pestProblem",
+                )}
+                className={
+                  textareaClassName
+                }
+                placeholder="Describe the pest problem..."
+              />
+
+              {errors.pestProblem && (
+                <p
+                  className={
+                    errorClassName
+                  }
+                >
+                  {
+                    errors.pestProblem
+                      .message
+                  }
+                </p>
+              )}
+            </section>
+
+            {/* SCHEDULE */}
+            <section>
+              <div className="mb-4 flex items-center gap-3">
+                <CalendarDays
+                  size={18}
+                  className="text-[#0878E8]"
                 />
 
-                <DetailRow
-                  label="Preferred time"
-                  value={request.preferredTime}
-                />
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                    Schedule
+                  </p>
+
+                  <h3 className="text-sm font-extrabold text-[#062B63]">
+                    Preferred appointment
+                  </h3>
+                </div>
               </div>
-            </div>
-          </section>
 
-          {/* Request metadata */}
-          <section className="mt-7">
-            <div
+              <div
+                className="
+                  grid
+                  gap-5
+                  rounded-2xl
+                  border
+                  border-blue-100
+                  bg-blue-50/50
+                  p-4
+                  sm:grid-cols-2
+                  sm:p-5
+                "
+              >
+                <div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                    <CalendarDays
+                      size={14}
+                      className="text-[#0878E8]"
+                    />
+                    Preferred date
+                  </label>
+
+                  <input
+                    type="date"
+                    {...register(
+                      "preferredDate",
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+
+                  {errors.preferredDate && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors
+                          .preferredDate
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                    <Clock3
+                      size={14}
+                      className="text-[#0878E8]"
+                    />
+                    Preferred time
+                  </label>
+
+                  <input
+                    type="text"
+                    {...register(
+                      "preferredTime",
+                    )}
+                    className={
+                      inputClassName
+                    }
+                    placeholder="e.g. Morning / 10:00 AM"
+                  />
+
+                  {errors.preferredTime && (
+                    <p
+                      className={
+                        errorClassName
+                      }
+                    >
+                      {
+                        errors
+                          .preferredTime
+                          .message
+                      }
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* STATUS */}
+            <section>
+              <div className="mb-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+                  Workflow
+                </p>
+
+                <h3 className="mt-1 text-sm font-extrabold text-[#062B63]">
+                  Request status
+                </h3>
+              </div>
+
+              <select
+                {...register("status")}
+                className={inputClassName}
+              >
+                <option value="pending">
+                  Pending
+                </option>
+
+                <option value="in-progress">
+                  In Progress
+                </option>
+
+                <option value="completed">
+                  Completed
+                </option>
+
+                <option value="cancelled">
+                  Cancelled
+                </option>
+              </select>
+
+              {errors.status && (
+                <p
+                  className={
+                    errorClassName
+                  }
+                >
+                  {errors.status.message}
+                </p>
+              )}
+            </section>
+
+            {/* METADATA */}
+            <section
               className="
                 rounded-2xl
                 border
@@ -657,50 +1006,69 @@ export default function QuoteRequestModal({
               "
             >
               <div className="grid gap-5 sm:grid-cols-2">
-                <DetailRow
-                  label="Reference number"
-                  value={
-                    request.referenceNumber
-                  }
-                />
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-400">
+                    Reference number
+                  </p>
 
-                <DetailRow
-                  label="Received"
-                  value={formatCreatedAt(
-                    request.createdAt,
-                  )}
-                />
+                  <p className="mt-1.5 text-sm font-bold text-[#062B63]">
+                    {request.referenceNumber}
+                  </p>
+                </div>
 
-                <DetailRow
-                  label="Current status"
-                  value={statusLabel}
-                />
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-400">
+                    Request number
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-bold text-[#062B63]">
+                    #{request.requestNumber}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-400">
+                    Received
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-semibold text-[#062B63]">
+                    {formatCreatedAt(
+                      request.createdAt,
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
+          </div>
 
-        {/* =========================
-            FOOTER ACTIONS
-        ========================== */}
-        <div
-          className="
-            shrink-0
-            border-t
-            border-slate-100
-            bg-white
-            px-5
-            py-4
-            sm:px-6
-          "
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* FOOTER */}
+          <div
+            className="
+              sticky
+              bottom-0
+              flex
+              shrink-0
+              flex-col
+              gap-3
+              border-t
+              border-slate-100
+              bg-white
+              px-5
+              py-4
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+              sm:px-6
+            "
+          >
             <button
               type="button"
               onClick={onClose}
-              disabled={updating}
+              disabled={
+                isSubmitting ||
+                updating
+              }
               className="
-                order-2
                 min-h-11
                 rounded-xl
                 border
@@ -714,27 +1082,49 @@ export default function QuoteRequestModal({
                 hover:bg-slate-50
                 disabled:cursor-not-allowed
                 disabled:opacity-50
-                sm:order-1
               "
             >
-              Close
+              Cancel
             </button>
 
-            <div className="order-1 sm:order-2">
-              <QuoteRequestActions
-                status={request.status}
-                onView={() => {}}
-                onStatusChange={(status) =>
-                  onStatusChange(
-                    String(request._id),
-                    status,
-                  )
+            {editMode && (
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  updating
                 }
-                updating={updating}
-              />
-            </div>
+                className="
+                  inline-flex
+                  min-h-11
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-xl
+                  bg-[#0878E8]
+                  px-6
+                  text-sm
+                  font-extrabold
+                  text-white
+                  shadow-sm
+                  transition
+                  hover:bg-[#066BCF]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+                "
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            )}
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

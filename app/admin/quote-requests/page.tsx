@@ -2,13 +2,13 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { authOptions } from "@/lib/auth/auth-options";
-import { connectDB } from "@/lib/db/connect";
 
 import {
-  getQuoteRequestsByStatus,
-} from "@/features/quote-requests/queries/getQuoteRequestsByStatus";
+  getQuoteRequests,
+} from "@/features/quote-requests/queries/getQuoteRequests";
 
 import QuoteRequestsPageClient from "@/components/admin/quote-requests/QuoteRequestPageClient";
+
 import type {
   QuoteRequestStatus,
 } from "@/models/QuoteRequest";
@@ -16,6 +16,7 @@ import type {
 interface QuoteRequestsPageProps {
   searchParams: Promise<{
     status?: string;
+    search?: string;
   }>;
 }
 
@@ -40,10 +41,6 @@ function isValidStatus(
 export default async function QuoteRequestsPage({
   searchParams,
 }: QuoteRequestsPageProps) {
-  /* =========================
-     ADMIN AUTH
-  ========================== */
-
   const session =
     await getServerSession(authOptions);
 
@@ -54,34 +51,28 @@ export default async function QuoteRequestsPage({
     redirect("/admin/login");
   }
 
-  /* =========================
-     STATUS
-  ========================== */
-
   const params = await searchParams;
 
   const requestedStatus =
     params.status;
 
-  const status: QuoteRequestStatus =
-    isValidStatus(requestedStatus)
-      ? requestedStatus
-      : "pending";
+  const status =
+    requestedStatus === "all"
+      ? "all"
+      : isValidStatus(requestedStatus)
+        ? requestedStatus
+        : "pending";
 
-  /* =========================
-     DATABASE
-  ========================== */
-
-  await connectDB();
+  const search =
+    params.search?.trim() ?? "";
 
   const requests =
-    await getQuoteRequestsByStatus(
+    await getQuoteRequests({
       status,
-    );
-
-  /* =========================
-     CLIENT UI
-  ========================== */
+      search,
+      archived: false,
+      limit: 200,
+    });
 
   return (
     <QuoteRequestsPageClient

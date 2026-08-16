@@ -21,53 +21,55 @@ interface QuoteRequestCardProps {
     request: IQuoteRequest,
   ) => void;
 
+  onEdit?: (
+    request: IQuoteRequest,
+  ) => void;
+
+  onArchive?: (
+    request: IQuoteRequest,
+  ) => void;
+
   onStatusChange: (
     id: string,
     status: QuoteRequestStatus,
   ) => void;
 
+  isAllView?: boolean;
+
   updating?: boolean;
+
+  archiving?: boolean;
 }
 
-function formatDate(
-  value: string,
-) {
+function formatDate(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat(
-    "en-AU",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    },
-  ).format(date);
+  return new Intl.DateTimeFormat("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
-function formatCreatedAt(
-  value: Date | string,
-) {
+function formatCreatedAt(value: Date | string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return "Recently";
   }
 
-  return new Intl.DateTimeFormat(
-    "en-AU",
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    },
-  ).format(date);
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function getStatusLabel(
@@ -94,8 +96,12 @@ function getStatusLabel(
 export default function QuoteRequestCard({
   request,
   onView,
+  onEdit,
+  onArchive,
   onStatusChange,
+  isAllView = false,
   updating = false,
+  archiving = false,
 }: QuoteRequestCardProps) {
   const statusLabel =
     getStatusLabel(request.status);
@@ -169,9 +175,7 @@ export default function QuoteRequestCard({
 
         <p className="text-[11px] text-slate-400">
           Received{" "}
-          {formatCreatedAt(
-            request.createdAt,
-          )}
+          {formatCreatedAt(request.createdAt)}
         </p>
       </div>
 
@@ -347,16 +351,28 @@ export default function QuoteRequestCard({
           >
             <QuoteRequestActions
               status={request.status}
+              isAllView={isAllView}
               onView={() =>
                 onView(request)
               }
-              onStatusChange={(status) =>
-                onStatusChange(
-                  String(request._id),
-                  status,
-                )
+              onEdit={
+                onEdit
+                  ? () => onEdit(request)
+                  : undefined
               }
+              onArchive={
+                onArchive
+                  ? () => onArchive(request)
+                  : undefined
+              }
+             onStatusChange={(status) =>
+  onStatusChange(
+    String(request._id),
+    status,
+  )
+}
               updating={updating}
+              archiving={archiving}
             />
           </div>
         </div>

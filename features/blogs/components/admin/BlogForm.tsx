@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useForm,
+} from "react-hook-form";
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
 
 import BlogBasicSection from "@/features/blogs/components/admin/BlogBasicSection";
 import BlogImageSection from "@/features/blogs/components/admin/BlogImageSection";
@@ -19,9 +27,19 @@ import {
   type BlogFormValues,
 } from "@/features/blogs/schemas/blog-schema";
 
-import { createBlog } from "@/features/blogs/actions/createBlog";
+import {
+  createBlog,
+} from "@/features/blogs/actions/createBlog";
 
-const DEFAULT_VALUES: BlogFormValues  = {
+import {
+  updateBlog,
+} from "@/features/blogs/actions/update-blog";
+
+import type {
+  BlogAdminViewModel,
+} from "@/features/blogs/types/blog";
+
+const DEFAULT_VALUES: BlogFormValues = {
   title: "",
   slug: "",
   excerpt: "",
@@ -38,17 +56,104 @@ const DEFAULT_VALUES: BlogFormValues  = {
   sortOrder: 0,
 };
 
-export default function BlogForm() {
+interface BlogFormProps {
+  mode?: "create" | "edit";
+  initialData?: BlogAdminViewModel;
+}
+
+export default function BlogForm({
+  mode = "create",
+  initialData,
+}: BlogFormProps) {
   const router = useRouter();
 
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode =
+    mode === "edit" && !!initialData;
 
-const form = useForm<BlogFormValues>({
-  resolver: zodResolver(blogSchema),
-  defaultValues: DEFAULT_VALUES,
-  mode: "onBlur",
-});
+  const [serverError, setServerError] =
+    useState<string | null>(null);
+
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  /*
+   * --------------------------------------------------
+   * FORM DEFAULT VALUES
+   * --------------------------------------------------
+   */
+
+  const form = useForm<BlogFormValues>({
+    resolver: zodResolver(blogSchema),
+
+    defaultValues:
+      isEditMode && initialData
+        ? {
+            title: initialData.title,
+
+            slug: initialData.slug,
+
+            excerpt:
+              initialData.excerpt,
+
+            content:
+              initialData.content,
+
+            category:
+              initialData.category,
+
+            tags:
+              initialData.tags ?? [],
+
+            author:
+              initialData.author,
+
+            featuredImage:
+              initialData.featuredImage
+                ? {
+                    url:
+                      initialData
+                        .featuredImage
+                        .url,
+
+                    publicId:
+                      initialData
+                        .featuredImage
+                        .publicId,
+
+                    alt:
+                      initialData
+                        .featuredImage
+                        .alt,
+                  }
+                : undefined,
+
+            seoTitle:
+              initialData.seoTitle ?? "",
+
+            seoDescription:
+              initialData.seoDescription ??
+              "",
+
+            featured:
+              initialData.featured,
+
+            published:
+              initialData.published,
+
+            publishedAt:
+              initialData.publishedAt
+                ? new Date(
+                    initialData.publishedAt,
+                  )
+                : undefined,
+
+            sortOrder:
+              initialData.sortOrder,
+          }
+        : DEFAULT_VALUES,
+
+    mode: "onBlur",
+  });
 
   const {
     control,
@@ -60,27 +165,55 @@ const form = useForm<BlogFormValues>({
     formState: { errors },
   } = form;
 
-  const onSubmit = async (values: BlogFormValues) => {
+  /*
+   * --------------------------------------------------
+   * SUBMIT
+   * --------------------------------------------------
+   */
+
+  const onSubmit = async (
+    values: BlogFormValues,
+  ) => {
     setServerError(null);
     setIsSubmitting(true);
 
     try {
-      const result = await createBlog(values);
+      const result =
+        isEditMode && initialData
+          ? await updateBlog({
+              id: initialData.id,
+              ...values,
+            })
+          : await createBlog(values);
+
+      /*
+       * ----------------------------------------------
+       * SERVER ERROR
+       * ----------------------------------------------
+       */
 
       if (!result.success) {
         setServerError(result.message);
 
         if (result.fieldErrors) {
-          Object.entries(result.fieldErrors).forEach(
+          Object.entries(
+            result.fieldErrors,
+          ).forEach(
             ([field, messages]) => {
-              if (!messages?.length) {
+              if (
+                !messages?.length
+              ) {
                 return;
               }
 
-              setError(field as keyof BlogFormValues, {
-                type: "server",
-                message: messages[0],
-              });
+              setError(
+                field as keyof BlogFormValues,
+                {
+                  type: "server",
+                  message:
+                    messages[0],
+                },
+              );
             },
           );
         }
@@ -88,18 +221,37 @@ const form = useForm<BlogFormValues>({
         return;
       }
 
+      /*
+       * ----------------------------------------------
+       * SUCCESS
+       * ----------------------------------------------
+       */
+
       router.push("/admin/blogs");
       router.refresh();
     } catch (error) {
-      console.error("CREATE_BLOG_FORM_ERROR", error);
+      console.error(
+        isEditMode
+          ? "UPDATE_BLOG_FORM_ERROR"
+          : "CREATE_BLOG_FORM_ERROR",
+        error,
+      );
 
       setServerError(
-        "Unable to create the blog right now. Please try again.",
+        isEditMode
+          ? "Unable to update the blog right now. Please try again."
+          : "Unable to create the blog right now. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  /*
+   * --------------------------------------------------
+   * UI
+   * --------------------------------------------------
+   */
 
   return (
     <form
@@ -108,13 +260,20 @@ const form = useForm<BlogFormValues>({
       className="pb-28"
     >
       <div className="space-y-6">
-        {/* Basic */}
+
+        {/* =========================
+            BASIC
+        ========================== */}
+
         <BlogBasicSection
           register={register}
           errors={errors}
         />
 
-        {/* Featured Image */}
+        {/* =========================
+            FEATURED IMAGE
+        ========================== */}
+
         <BlogImageSection
           control={control}
           register={register}
@@ -122,13 +281,19 @@ const form = useForm<BlogFormValues>({
           errors={errors}
         />
 
-        {/* Content */}
+        {/* =========================
+            CONTENT
+        ========================== */}
+
         <BlogContentSection
           register={register}
           errors={errors}
         />
 
-        {/* Category / Tags / Sort */}
+        {/* =========================
+            CATEGORY / TAGS / SORT
+        ========================== */}
+
         <BlogCategorySection
           register={register}
           setValue={setValue}
@@ -136,36 +301,106 @@ const form = useForm<BlogFormValues>({
           errors={errors}
         />
 
-        {/* SEO */}
+        {/* =========================
+            SEO
+        ========================== */}
+
         <BlogSEOSection
           register={register}
           errors={errors}
         />
 
-        {/* Publishing */}
+        {/* =========================
+            PUBLISHING
+        ========================== */}
+
         <BlogPublishingSection
           register={register}
           errors={errors}
         />
 
-        {/* Server Error */}
+        {/* =========================
+            SERVER ERROR
+        ========================== */}
+
         {serverError && (
           <div
             role="alert"
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+            className="
+              rounded-xl
+              border
+              border-red-200
+              bg-red-50
+              px-4
+              py-3
+              text-sm
+              font-medium
+              text-red-700
+            "
           >
             {serverError}
           </div>
         )}
       </div>
 
-      {/* Bottom Actions */}
-      <div className="sticky bottom-0 z-20 mt-8 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-4px_20px_rgba(15,23,42,0.06)] backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-5xl flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* =========================
+          BOTTOM ACTIONS
+      ========================== */}
+
+      <div
+        className="
+          sticky
+          bottom-0
+          z-20
+          mt-8
+          border-t
+          border-slate-200
+          bg-white/95
+          px-4
+          py-4
+          shadow-[0_-4px_20px_rgba(15,23,42,0.06)]
+          backdrop-blur
+          sm:px-6
+        "
+      >
+        <div
+          className="
+            mx-auto
+            flex
+            max-w-5xl
+            flex-col-reverse
+            gap-3
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+          "
+        >
+
           {/* Cancel */}
+
           <Link
             href="/admin/blogs"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-[#0F172A] transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            className="
+              inline-flex
+              h-11
+              items-center
+              justify-center
+              gap-2
+              rounded-lg
+              border
+              border-slate-300
+              bg-white
+              px-5
+              text-sm
+              font-semibold
+              text-[#0F172A]
+              transition
+              hover:border-slate-400
+              hover:bg-slate-50
+              focus:outline-none
+              focus:ring-2
+              focus:ring-blue-100
+            "
           >
             <ArrowLeft
               size={16}
@@ -176,10 +411,31 @@ const form = useForm<BlogFormValues>({
           </Link>
 
           {/* Submit */}
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#0878E8] px-6 text-sm font-semibold text-white transition hover:bg-[#066BCF] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
+            className="
+              inline-flex
+              h-11
+              items-center
+              justify-center
+              gap-2
+              rounded-lg
+              bg-[#0878E8]
+              px-6
+              text-sm
+              font-semibold
+              text-white
+              transition
+              hover:bg-[#066BCF]
+              focus:outline-none
+              focus:ring-2
+              focus:ring-blue-200
+              focus:ring-offset-1
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
           >
             {isSubmitting ? (
               <>
@@ -189,7 +445,9 @@ const form = useForm<BlogFormValues>({
                   aria-hidden="true"
                 />
 
-                Creating...
+                {isEditMode
+                  ? "Saving..."
+                  : "Creating..."}
               </>
             ) : (
               <>
@@ -198,10 +456,13 @@ const form = useForm<BlogFormValues>({
                   aria-hidden="true"
                 />
 
-                Create Blog
+                {isEditMode
+                  ? "Save Changes"
+                  : "Create Blog"}
               </>
             )}
           </button>
+
         </div>
       </div>
     </form>

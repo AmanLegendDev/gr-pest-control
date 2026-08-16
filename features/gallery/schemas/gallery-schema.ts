@@ -91,3 +91,17 @@ export const gallerySchema = z.object({
 export type GalleryFormValues = z.infer<
   typeof gallerySchema
 >;
+
+export const updateGallerySchema =
+  gallerySchema.extend({
+    id: z
+      .string()
+      .trim()
+      .regex(
+        /^[a-f\d]{24}$/i,
+        "Invalid gallery item ID.",
+      ),
+  });
+
+export type UpdateGalleryInput =
+  z.infer<typeof updateGallerySchema>;

@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/auth-options";
-import { connectDB } from "@/lib/db/connect";
 
 import {
   updateQuoteRequestStatus,
@@ -19,7 +18,7 @@ interface RouteContext {
   }>;
 }
 
-const VALID_STATUSES: QuoteRequestStatus[] = [
+const VALID_STATUSES: readonly QuoteRequestStatus[] = [
   "pending",
   "in-progress",
   "completed",
@@ -32,7 +31,7 @@ export async function PATCH(
 ) {
   try {
     /* =========================
-       AUTHENTICATION
+       ADMIN AUTH
     ========================== */
 
     const session =
@@ -47,9 +46,7 @@ export async function PATCH(
           success: false,
           message: "Unauthorized.",
         },
-        {
-          status: 401,
-        },
+        { status: 401 },
       );
     }
 
@@ -65,16 +62,15 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid quote request ID.",
+          message:
+            "Invalid quote request ID.",
         },
-        {
-          status: 400,
-        },
+        { status: 400 },
       );
     }
 
     /* =========================
-       REQUEST BODY
+       BODY
     ========================== */
 
     const body = await request.json();
@@ -90,17 +86,13 @@ export async function PATCH(
           success: false,
           message: "Invalid request status.",
         },
-        {
-          status: 400,
-        },
+        { status: 400 },
       );
     }
 
     /* =========================
-       DATABASE
+       UPDATE
     ========================== */
-
-    await connectDB();
 
     const result =
       await updateQuoteRequestStatus(
@@ -114,9 +106,7 @@ export async function PATCH(
           success: false,
           message: result.message,
         },
-        {
-          status: 400,
-        },
+        { status: 400 },
       );
     }
 
@@ -127,15 +117,11 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: true,
-
         message:
           "Quote request status updated successfully.",
-
         data: result.request,
       },
-      {
-        status: 200,
-      },
+      { status: 200 },
     );
   } catch (error) {
     console.error(
@@ -149,9 +135,7 @@ export async function PATCH(
         message:
           "Unable to update quote request status.",
       },
-      {
-        status: 500,
-      },
+      { status: 500 },
     );
   }
 }

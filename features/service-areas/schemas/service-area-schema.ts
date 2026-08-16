@@ -114,3 +114,17 @@ sortOrder: z
 export type ServiceAreaFormValues = z.infer<
   typeof serviceAreaSchema
 >;
+
+export const updateServiceAreaSchema =
+  serviceAreaSchema.extend({
+    id: z
+      .string()
+      .trim()
+      .regex(
+        /^[a-f\d]{24}$/i,
+        "Invalid service area ID.",
+      ),
+  });
+
+export type UpdateServiceAreaInput =
+  z.infer<typeof updateServiceAreaSchema>;

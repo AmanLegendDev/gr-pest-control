@@ -7,6 +7,7 @@ export async function getQuoteRequestsByStatus(
 ) {
   return QuoteRequest.find({
     status,
+    archived: false,
   })
     .sort({
       createdAt: -1,

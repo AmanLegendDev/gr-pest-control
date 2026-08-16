@@ -1,38 +1,63 @@
 "use client";
 
 import {
+  Archive,
   Check,
+  Edit3,
   Eye,
   X,
 } from "lucide-react";
 
-import type { QuoteRequestStatus } from "@/models/QuoteRequest";
+import type {
+  QuoteRequestStatus,
+} from "@/models/QuoteRequest";
 
 interface QuoteRequestActionsProps {
   status: QuoteRequestStatus;
 
+  /**
+   * True only when the request is being
+   * displayed inside the All tab.
+   */
+  isAllView?: boolean;
+
   onView: () => void;
+
+  onEdit?: () => void;
+
+  onArchive?: () => void;
 
   onStatusChange: (
     status: QuoteRequestStatus,
   ) => void;
 
   updating?: boolean;
+
+  archiving?: boolean;
 }
 
 export default function QuoteRequestActions({
   status,
+  isAllView = false,
   onView,
+  onEdit,
+  onArchive,
   onStatusChange,
   updating = false,
+  archiving = false,
 }: QuoteRequestActionsProps) {
+  const busy =
+    updating || archiving;
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {/* View */}
+      {/* =====================================================
+          VIEW
+      ====================================================== */}
       <button
         type="button"
         onClick={onView}
-        disabled={updating}
+        disabled={busy}
         className="
           inline-flex
           min-h-10
@@ -62,15 +87,101 @@ export default function QuoteRequestActions({
         View
       </button>
 
-      {/* Pending actions */}
-      {status === "pending" && (
+      {/* =====================================================
+          EDIT + ARCHIVE
+          ONLY IN ALL VIEW
+      ====================================================== */}
+      {isAllView && (
+        <>
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              disabled={busy}
+              className="
+                inline-flex
+                min-h-10
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                px-3.5
+                text-xs
+                font-bold
+                text-[#062B63]
+                transition
+                hover:border-blue-200
+                hover:bg-blue-50
+                hover:text-[#0878E8]
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+                focus:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-blue-200
+              "
+            >
+              <Edit3 size={15} />
+              Edit
+            </button>
+          )}
+
+          {onArchive && (
+            <button
+              type="button"
+              onClick={onArchive}
+              disabled={busy}
+              className="
+                inline-flex
+                min-h-10
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                border
+                border-slate-200
+                bg-slate-50
+                px-3.5
+                text-xs
+                font-bold
+                text-slate-600
+                transition
+                hover:border-slate-300
+                hover:bg-slate-100
+                hover:text-[#062B63]
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+                focus:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-slate-200
+              "
+            >
+              {archiving ? (
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+              ) : (
+                <Archive size={15} />
+              )}
+
+              Archive
+            </button>
+          )}
+        </>
+      )}
+
+      {/* =====================================================
+          PENDING
+          Accept + Cancel
+      ====================================================== */}
+     {!isAllView && status === "pending" && (
         <>
           <button
             type="button"
             onClick={() =>
               onStatusChange("in-progress")
             }
-            disabled={updating}
+            disabled={busy}
             className="
               inline-flex
               min-h-10
@@ -108,7 +219,7 @@ export default function QuoteRequestActions({
             onClick={() =>
               onStatusChange("cancelled")
             }
-            disabled={updating}
+            disabled={busy}
             className="
               inline-flex
               min-h-10
@@ -139,15 +250,18 @@ export default function QuoteRequestActions({
         </>
       )}
 
-      {/* In-progress actions */}
-      {status === "in-progress" && (
+      {/* =====================================================
+          IN PROGRESS
+          Complete + Cancel
+      ====================================================== */}
+      {!isAllView && status === "in-progress" && (
         <>
           <button
             type="button"
             onClick={() =>
               onStatusChange("completed")
             }
-            disabled={updating}
+            disabled={busy}
             className="
               inline-flex
               min-h-10
@@ -185,7 +299,7 @@ export default function QuoteRequestActions({
             onClick={() =>
               onStatusChange("cancelled")
             }
-            disabled={updating}
+            disabled={busy}
             className="
               inline-flex
               min-h-10
@@ -215,6 +329,11 @@ export default function QuoteRequestActions({
           </button>
         </>
       )}
+
+      {/* =====================================================
+          COMPLETED / CANCELLED
+          Nothing extra — View only
+      ====================================================== */}
     </div>
   );
 }

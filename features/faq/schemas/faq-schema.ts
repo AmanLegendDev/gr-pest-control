@@ -43,3 +43,17 @@ seoDescription: optionalSeoDescription,
 });
 
 export type FAQFormValues = z.infer<typeof faqSchema>;
+
+export const updateFAQSchema =
+  faqSchema.extend({
+    id: z
+      .string()
+      .trim()
+      .regex(
+        /^[a-f\d]{24}$/i,
+        "Invalid FAQ ID.",
+      ),
+  });
+
+export type UpdateFAQInput =
+  z.infer<typeof updateFAQSchema>;
