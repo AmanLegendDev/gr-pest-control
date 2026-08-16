@@ -60,7 +60,7 @@ export interface AdminQuoteRequest {
 
   status: QuoteRequestStatus;
 
-  archived?: boolean;
+  archived: boolean;
 
   createdAt: string;
   updatedAt: string;
@@ -644,13 +644,13 @@ const handleView = useCallback(
                 (request) => (
 <QuoteRequestCard
   key={request.id}
-  request={request as any}
-  onView={handleView as any}
-  onEdit={
-    status === "all"
-      ? handleEdit as any
-      : undefined
-  }
+ request={request}
+onView={handleView}
+ onEdit={
+  status === "all"
+    ? handleEdit
+    : undefined
+}
   onArchive={
     status === "all"
       ? () => handleArchive(request)
@@ -680,7 +680,7 @@ const handleView = useCallback(
       ===================================================== */}
 
 <QuoteRequestModal
-  request={selectedRequest as any}
+  request={selectedRequest}
   onClose={() => {
     setEditMode(false);
     handleCloseModal();

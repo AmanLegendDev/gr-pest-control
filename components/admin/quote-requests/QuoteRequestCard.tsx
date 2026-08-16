@@ -8,25 +8,28 @@ import {
 } from "lucide-react";
 
 import type {
-  IQuoteRequest,
   QuoteRequestStatus,
 } from "@/models/QuoteRequest";
+
+import type {
+  QuoteRequestAdminViewModel,
+} from "@/features/quote-requests/types/quoteRequest";
 
 import QuoteRequestActions from "./QuoteRequestActions";
 
 interface QuoteRequestCardProps {
-  request: IQuoteRequest;
+  request: QuoteRequestAdminViewModel;
 
   onView: (
-    request: IQuoteRequest,
+    request: QuoteRequestAdminViewModel,
   ) => void;
 
   onEdit?: (
-    request: IQuoteRequest,
+    request: QuoteRequestAdminViewModel,
   ) => void;
 
   onArchive?: (
-    request: IQuoteRequest,
+    request: QuoteRequestAdminViewModel,
   ) => void;
 
   onStatusChange: (
@@ -367,7 +370,7 @@ export default function QuoteRequestCard({
               }
              onStatusChange={(status) =>
   onStatusChange(
-    String(request._id),
+    String(request.id),
     status,
   )
 }
