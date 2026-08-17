@@ -298,234 +298,118 @@ export default function ServicesHero() {
               VISUAL PANEL
           ========================== */}
 
-          <div className="relative mx-auto w-full max-w-xl">
-            <div
-              className="
-                relative
-                overflow-hidden
-                rounded-[30px]
-                border
-                border-slate-200
-                bg-[#F8FAFC]
-                p-2
-                shadow-[0_30px_90px_rgba(15,23,42,0.10)]
-              "
-            >
-              {/* Main visual */}
-              <div
-                className="
-                  relative
-                  flex
-                  min-h-[330px]
-                  items-end
-                  overflow-hidden
-                  rounded-[24px]
-                  bg-[#062B63]
-                  p-6
-                  sm:min-h-[390px]
-                  sm:p-8
-                "
-              >
-                {/* Decorative shapes */}
-                <div
-                  aria-hidden="true"
-                  className="
-                    absolute
-                    -right-20
-                    -top-20
-                    h-64
-                    w-64
-                    rounded-full
-                    bg-[#0878E8]/30
-                    blur-2xl
-                  "
-                />
+          {/* =========================
+    PEST SHOWCASE
+========================== */}
 
-                <div
-                  aria-hidden="true"
-                  className="
-                    absolute
-                    bottom-[-90px]
-                    left-[-70px]
-                    h-56
-                    w-56
-                    rounded-full
-                    bg-white/10
-                    blur-2xl
-                  "
-                />
+<div
+  className="
+    relative
+    flex
+    min-h-[330px]
+    items-center
+    justify-center
+    overflow-hidden
+    rounded-[24px]
+    bg-white
+    
+    px-5
+    py-8
+    sm:min-h-[390px]
+    sm:px-8
+    sm:py-10
+  "
+>
+  {/* Soft center glow */}
+  <div
+    aria-hidden="true"
+    className="
+      pointer-events-none
+      absolute
+      left-1/2
+      top-1/2
+      h-64
+      w-64
+      -translate-x-1/2
+      -translate-y-1/2
+      rounded-full
+      bg-blue-50
+      blur-3xl
+    "
+  />
 
-                {/* Shield */}
-                <div
-                  className="
-                    absolute
-                    right-7
-                    top-7
-                    flex
-                    h-14
-                    w-14
-                    items-center
-                    justify-center
-                    rounded-2xl
-                    border
-                    border-white/10
-                    bg-white/10
-                    text-white
-                    backdrop-blur-sm
-                    sm:right-9
-                    sm:top-9
-                  "
-                >
-                  <ShieldCheck
-                    size={27}
-                    strokeWidth={1.7}
-                  />
-                </div>
-
-                {/* Visual copy */}
-                <div className="relative max-w-sm">
-                  <p
-                    className="
-                      text-[10px]
-                      font-extrabold
-                      uppercase
-                      tracking-[0.18em]
-                      text-blue-200
-                    "
-                  >
-                    Pest solutions
-                  </p>
-
-                  <h2
-                    className="
-                      mt-3
-                      text-2xl
-                      font-extrabold
-                      leading-tight
-                      tracking-[-0.03em]
-                      text-white
-                      sm:text-3xl
-                    "
-                  >
-                    Protection built
-                    around your property.
-                  </h2>
-
-                  <p
-                    className="
-                      mt-4
-                      text-sm
-                      leading-6
-                      text-blue-100/75
-                    "
-                  >
-                    Tell us what you’re dealing with
-                    and we’ll help you choose the right
-                    service.
-                  </p>
-                </div>
-
-                {/* Floating service indicator */}
-                <div
-                  className="
-                    absolute
-                    bottom-6
-                    right-6
-                    hidden
-                    items-center
-                    gap-3
-                    rounded-2xl
-                    border
-                    border-white/10
-                    bg-white/10
-                    px-4
-                    py-3
-                    backdrop-blur-md
-                    sm:flex
-                  "
-                >
-                  <div
-                    className="
-                      flex
-                      h-9
-                      w-9
-                      items-center
-                      justify-center
-                      rounded-xl
-                      bg-white
-                      text-[#0878E8]
-                    "
-                  >
-                    <ShieldCheck size={18} />
-                  </div>
-
-                  <div>
-                    <p
-                      className="
-                        text-[10px]
-                        font-bold
-                        uppercase
-                        tracking-[0.12em]
-                        text-blue-100/60
-                      "
-                    >
-                      Need help?
-                    </p>
-
-                    <p
-                      className="
-                        mt-0.5
-                        text-xs
-                        font-bold
-                        text-white
-                      "
-                    >
-                      Start with a free quote
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Small floating badge */}
-            <div
-              className="
-                absolute
-                -bottom-4
-                left-5
-                flex
-                items-center
-                gap-2.5
-                rounded-2xl
-                border
-                border-slate-200
-                bg-white
-                px-4
-                py-3
-                shadow-[0_15px_35px_rgba(15,23,42,0.10)]
-                sm:left-8
-              "
-            >
-              <div
-                className="
-                  h-2.5
-                  w-2.5
-                  rounded-full
-                  bg-emerald-500
-                "
-              />
-
-              <span
-                className="
-                  text-xs
-                  font-bold
-                  text-[#062B63]
-                "
-              >
-                Solutions for homes & businesses
-              </span>
-            </div>
-          </div>
+  <div
+    className="
+      relative
+      grid
+      w-full
+      max-w-[430px]
+      grid-cols-2
+      items-center
+      justify-items-center
+      gap-x-6
+      gap-y-8
+      sm:gap-x-10
+      sm:gap-y-10
+      lg:grid-cols-3
+      lg:gap-x-7
+      lg:gap-y-8
+    "
+  >
+    {[
+      {
+        src: "/images/pests/cockroach.png",
+        alt: "Cockroach",
+      },
+      {
+        src: "/images/pests/ant.png",
+        alt: "Ant",
+      },
+      {
+        src: "/images/pests/termite.png",
+        alt: "Termite",
+      },
+      {
+        src: "/images/pests/bed-bug.png",
+        alt: "Bed bug",
+      },
+      {
+        src: "/images/pests/mosquito.png",
+        alt: "Mosquito",
+      },
+      {
+        src: "/images/pests/spider.png",
+        alt: "Spider",
+      },
+    ].map((pest) => (
+      <div
+        key={pest.src}
+        className="
+          flex
+          h-24
+          w-24
+          items-center
+          justify-center
+          sm:h-28
+          sm:w-28
+          lg:h-32
+          lg:w-32
+        "
+      >
+        <img
+          src={pest.src}
+          alt={pest.alt}
+          className="
+            h-full
+            w-full
+            object-contain
+            drop-shadow-[0_12px_18px_rgba(15,23,42,0.14)]
+          "
+        />
+      </div>
+    ))}
+  </div>
+</div>
         </div>
       </div>
     </section>

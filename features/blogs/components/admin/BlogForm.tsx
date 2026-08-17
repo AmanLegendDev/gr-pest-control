@@ -286,9 +286,9 @@ export default function BlogForm({
         ========================== */}
 
         <BlogContentSection
-          register={register}
-          errors={errors}
-        />
+  control={control}
+  errors={errors}
+/>
 
         {/* =========================
             CATEGORY / TAGS / SORT

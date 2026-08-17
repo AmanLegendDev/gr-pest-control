@@ -63,6 +63,21 @@ export default function ServicesPageClient({
     );
   }, [services]);
 
+  const orderedServices = useMemo(() => {
+  const nonFeatured = services.filter(
+    (service) => !service.featured,
+  );
+
+  const featured = services.filter(
+    (service) => service.featured,
+  );
+
+  return [
+    ...nonFeatured,
+    ...featured,
+  ];
+}, [services]);
+
   return (
     <>
       <FeaturedServices
@@ -77,10 +92,12 @@ export default function ServicesPageClient({
         }
       />
 
-      <ServicesGrid
-        services={services}
-        activeCategory={activeCategory}
-      />
+      
+
+    <ServicesGrid
+  services={orderedServices}
+  activeCategory={activeCategory}
+/>
 
       <ServicesHelpCTA />
 

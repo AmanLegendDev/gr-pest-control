@@ -258,12 +258,12 @@ export default function BlogHero({
             RIGHT VISUAL
         ========================== */}
 
-        <div
-          className="
-            relative
-            min-h-[320px]
-            overflow-hidden
-            rounded-[30px]
+     <div
+  className="
+    relative
+    min-h-[320px]
+    overflow-visible
+    rounded-[30px]
             border
             border-slate-200
             bg-white
@@ -311,16 +311,17 @@ export default function BlogHero({
 
           {/* Article visual */}
           <div
-            className="
-              absolute
-              left-1/2
-              top-1/2
-              w-[78%]
-              max-w-[390px]
-              -translate-x-1/2
-              -translate-y-1/2
-            "
-          >
+  className="
+    absolute
+    left-1/2
+    top-1/2
+    z-10
+    w-[78%]
+    max-w-[390px]
+    -translate-x-1/2
+    -translate-y-1/2
+  "
+>
             <div
               className="
                 overflow-hidden
@@ -444,21 +445,25 @@ export default function BlogHero({
           </div>
 
           {/* Floating badge */}
-          <div
-            className="
-              absolute
-              bottom-5
-              left-5
-              rounded-2xl
-              border
-              border-white/80
-              bg-white/95
-              px-4
-              py-3
-              shadow-lg
-              backdrop-blur-sm
-            "
-          >
+<div
+  className="
+    absolute
+    -bottom-5
+-right-5
+    z-20
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    px-3
+    py-2.5
+    shadow-[0_12px_30px_rgba(15,23,42,0.14)]
+    sm:bottom-5
+    sm:right-5
+    sm:px-4
+    sm:py-3
+  "
+>
             <div className="flex items-center gap-2.5">
               <div
                 className="

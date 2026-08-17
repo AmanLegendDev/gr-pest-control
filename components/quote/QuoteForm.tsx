@@ -1,8 +1,16 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import {
   quoteRequestSchema,
@@ -49,14 +57,54 @@ export default function QuoteForm({
   services,
 }: QuoteFormProps) {
   const router = useRouter();
+const searchParams = useSearchParams();
 
-  const [currentStep, setCurrentStep] =
-    useState(1);
+const [currentStep, setCurrentStep] =
+  useState(1);
 
-  const [data, setData] =
-    useState<QuoteFormData>(
-      INITIAL_QUOTE_DATA,
+const [data, setData] =
+  useState<QuoteFormData>(
+    INITIAL_QUOTE_DATA,
+  );
+
+
+  useEffect(() => {
+  try {
+    const stored =
+      sessionStorage.getItem(
+        "gr-quote-request",
+      );
+
+    if (stored) {
+      const parsed =
+        JSON.parse(stored) as QuoteFormData;
+
+      setData(parsed);
+    }
+
+    const step =
+      searchParams.get("step");
+
+    if (
+      step === "1" ||
+      step === "2" ||
+      step === "3"
+    ) {
+      setCurrentStep(
+        Number(step) as 1 | 2 | 3,
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Failed to restore quote data:",
+      error,
     );
+
+    sessionStorage.removeItem(
+      "gr-quote-request",
+    );
+  }
+}, [searchParams]);
 
   const [errors, setErrors] =
     useState<FieldErrors>({});

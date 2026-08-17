@@ -175,32 +175,7 @@ export default function ServiceCard({
           </div>
 
           {/* Featured */}
-          {featured && (
-            <div
-              className="
-                absolute
-                right-4
-                top-4
-                inline-flex
-                items-center
-                gap-1.5
-                rounded-full
-                bg-[#062B63]
-                px-3
-                py-1.5
-                text-[10px]
-                font-extrabold
-                uppercase
-                tracking-[0.1em]
-                text-white
-                shadow-lg
-              "
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-
-              Featured
-            </div>
-          )}
+        
         </div>
       </div>
 
