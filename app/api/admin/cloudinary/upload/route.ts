@@ -69,11 +69,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await uploadImage(
-      file,
-      "gr-pest-control/services",
-    );
-
+  const result = await uploadImage(
+  file,
+  "gr-pest-control/service-areas",
+);
     return NextResponse.json({
       success: true,
       image: {

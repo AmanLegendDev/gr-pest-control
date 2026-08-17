@@ -68,11 +68,13 @@ export async function getAdminServiceAreas() {
       sortOrder:
         area.sortOrder,
 
-      createdAt:
-        area.createdAt.toISOString(),
+    createdAt: area.createdAt
+  ? new Date(area.createdAt).toISOString()
+  : new Date().toISOString(),
 
-      updatedAt:
-        area.updatedAt.toISOString(),
+updatedAt: area.updatedAt
+  ? new Date(area.updatedAt).toISOString()
+  : new Date().toISOString(),
     }),
   );
 }

@@ -51,6 +51,11 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: "Contact",
     href: "/contact",
   },
+
+  { 
+  label: "About",
+  href: "/About",
+},
 ];
 
 function normalizePhone(value: string) {
@@ -146,7 +151,7 @@ export default function MobileNav({
               z-40
               cursor-default
               bg-[#062B63]/25
-              backdrop-blur-[5px]
+              backdrop-blur-[2px]
               touch-none
             "
           />
@@ -160,25 +165,22 @@ export default function MobileNav({
             role="dialog"
             aria-modal="true"
             aria-label="Mobile navigation"
-            initial={{
-              opacity: 0,
-              y: -18,
-              scale: 0.97,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              y: -12,
-              scale: 0.98,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+        initial={{
+  opacity: 0,
+  y: -8,
+}}
+animate={{
+  opacity: 1,
+  y: 0,
+}}
+exit={{
+  opacity: 0,
+  y: -8,
+}}
+transition={{
+  duration: 0.16,
+  ease: "easeOut",
+}}  
             className="
               fixed
               inset-x-3
@@ -376,119 +378,79 @@ export default function MobileNav({
                 aria-label="Mobile navigation links"
                 className="space-y-1"
               >
-                {NAVIGATION_ITEMS.map(
-                  (item, index) => {
-                    const isActive =
-                      item.href === "/"
-                        ? pathname === "/"
-                        : pathname === item.href ||
-                          pathname.startsWith(
-                            `${item.href}/`,
-                          );
+                {NAVIGATION_ITEMS.map((item) => {
+  const isActive =
+    item.href === "/"
+      ? pathname === "/"
+      : pathname === item.href ||
+        pathname.startsWith(`${item.href}/`);
 
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={{
-                          opacity: 0,
-                          x: -10,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        transition={{
-                          delay:
-                            0.04 +
-                            index * 0.035,
-                          duration: 0.25,
-                          ease: [
-                            0.22,
-                            1,
-                            0.36,
-                            1,
-                          ],
-                        }}
-                      >
-                        <Link
-                          href={item.href}
-                          onClick={onClose}
-                          aria-current={
-                            isActive
-                              ? "page"
-                              : undefined
-                          }
-                          className={`
-                            group
-                            flex
-                            min-h-[56px]
-                            items-center
-                            justify-between
-                            rounded-[18px]
-                            px-4
+  return (
+    <Link
+      key={item.href}
+      href={item.href}
+      onClick={onClose}
+      aria-current={
+        isActive ? "page" : undefined
+      }
+      className={`
+        group
+        flex
+        min-h-[56px]
+        items-center
+        justify-between
+        rounded-[18px]
+        px-4
+        text-[15px]
+        font-semibold
+        transition-colors
+        duration-150
+        ${
+          isActive
+            ? "bg-white text-[#0878E8] shadow-sm ring-1 ring-slate-200/70"
+            : "text-[#0F172A] hover:bg-white hover:text-[#0878E8]"
+        }
+      `}
+    >
+      <span className="flex items-center gap-3">
+        <span
+          className={`
+            h-2
+            w-2
+            rounded-full
+            ${
+              isActive
+                ? "bg-[#0878E8] shadow-[0_0_0_4px_rgba(8,120,232,0.08)]"
+                : "bg-transparent group-hover:bg-[#0878E8]/40"
+            }
+          `}
+        />
 
-                            text-[15px]
-                            font-semibold
+        {item.label}
+      </span>
 
-                            transition-all
-                            duration-200
-
-                            ${
-                              isActive
-                                ? "bg-white text-[#0878E8] shadow-sm ring-1 ring-slate-200/70"
-                                : "text-[#0F172A] hover:bg-white hover:text-[#0878E8] hover:shadow-sm"
-                            }
-                          `}
-                        >
-                          <span className="flex items-center gap-3">
-                            <span
-                              className={`
-                                h-2
-                                w-2
-                                rounded-full
-
-                                transition-all
-                                duration-200
-
-                                ${
-                                  isActive
-                                    ? "bg-[#0878E8] shadow-[0_0_0_4px_rgba(8,120,232,0.08)]"
-                                    : "bg-transparent group-hover:bg-[#0878E8]/40"
-                                }
-                              `}
-                            />
-
-                            {item.label}
-                          </span>
-
-                          <span
-                            className={`
-                              flex
-                              h-8
-                              w-8
-                              items-center
-                              justify-center
-                              rounded-full
-
-                              transition-all
-                              duration-200
-
-                              ${
-                                isActive
-                                  ? "bg-blue-50 text-[#0878E8]"
-                                  : "text-slate-300 group-hover:bg-blue-50 group-hover:text-[#0878E8]"
-                              }
-                            `}
-                          >
-                            <ChevronRight
-                              size={17}
-                            />
-                          </span>
-                        </Link>
-                      </motion.div>
-                    );
-                  },
-                )}
+      <span
+        className={`
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-full
+          transition-colors
+          duration-150
+          ${
+            isActive
+              ? "bg-blue-50 text-[#0878E8]"
+              : "text-slate-300 group-hover:bg-blue-50 group-hover:text-[#0878E8]"
+          }
+        `}
+      >
+        <ChevronRight size={17} />
+      </span>
+    </Link>
+  );
+})}
               </nav>
             </div>
 
@@ -499,22 +461,7 @@ export default function MobileNav({
 
             <div className="shrink-0">
               {/* Primary CTA */}
-
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 8,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  delay: 0.25,
-                  duration: 0.25,
-                }}
-                className="mt-3"
-              >
+<div className="mt-3">
                 <Link
                   href={quoteHref}
                   onClick={onClose}
@@ -566,23 +513,11 @@ export default function MobileNav({
                     <ArrowUpRight size={17} />
                   </span>
                 </Link>
-              </motion.div>
+              </div>
 
               {/* Quick Contact */}
 
-              <motion.div
-                initial={{
-                  opacity: 0,
-                }}
-                animate={{
-                  opacity: 1,
-                }}
-                transition={{
-                  delay: 0.3,
-                  duration: 0.25,
-                }}
-                className="mt-3 grid grid-cols-2 gap-3"
-              >
+     <div className="mt-3 grid grid-cols-2 gap-3">
                 <a
                   href={phoneHref}
                   className="
@@ -693,29 +628,19 @@ export default function MobileNav({
                     Email Us
                   </a>
                 )}
-              </motion.div>
+              </div>
 
               {/* Business identity */}
 
-              <motion.div
-                initial={{
-                  opacity: 0,
-                }}
-                animate={{
-                  opacity: 1,
-                }}
-                transition={{
-                  delay: 0.35,
-                  duration: 0.25,
-                }}
-                className="
-                  mt-3
-                  border-t
-                  border-slate-100
-                  px-1
-                  pt-3
-                "
-              >
+            <div
+  className="
+    mt-3
+    border-t
+    border-slate-100
+    px-1
+    pt-3
+  "
+>
                 <p className="text-xs font-medium leading-5 text-slate-500">
                   {settings.shortDescription ||
                     "Professional pest control solutions for homes and businesses."}
@@ -733,7 +658,7 @@ export default function MobileNav({
                     </p>
                   </div>
                 )}
-              </motion.div>
+              </div>
             </div>
           </motion.aside>
         </>
