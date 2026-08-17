@@ -1,5 +1,21 @@
 import ServiceArea from "@/models/ServiceArea";
 
+function toSafeISOString(
+  value: Date | string | undefined | null,
+): string {
+  if (!value) {
+    return new Date().toISOString();
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+
+  return date.toISOString();
+}
+
 export async function getServiceAreaBySlug(
   slug: string,
 ) {
@@ -67,15 +83,13 @@ export async function getServiceAreaBySlug(
     sortOrder:
       area.sortOrder ?? 0,
 
-    createdAt:
-      new Date(
-        area.createdAt,
-      ).toISOString(),
+    createdAt: toSafeISOString(
+      area.createdAt,
+    ),
 
-    updatedAt:
-      new Date(
-        area.updatedAt,
-      ).toISOString(),
+    updatedAt: toSafeISOString(
+      area.updatedAt,
+    ),
   };
 }
 

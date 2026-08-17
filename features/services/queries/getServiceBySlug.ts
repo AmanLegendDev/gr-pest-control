@@ -14,6 +14,23 @@ export async function getServiceBySlug(
     return null;
   }
 
+
+  function toSafeISOString(
+  value: Date | string | undefined | null,
+): string {
+  if (!value) {
+    return new Date().toISOString();
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+
+  return date.toISOString();
+}
+
   return {
     id: String(service._id),
 
@@ -82,15 +99,13 @@ export async function getServiceBySlug(
 
     sortOrder: service.sortOrder,
 
-    createdAt:
-      new Date(
-        service.createdAt,
-      ).toISOString(),
+createdAt: toSafeISOString(
+  service.createdAt,
+),
 
-    updatedAt:
-      new Date(
-        service.updatedAt,
-      ).toISOString(),
+updatedAt: toSafeISOString(
+  service.updatedAt,
+),
   };
 }
 
