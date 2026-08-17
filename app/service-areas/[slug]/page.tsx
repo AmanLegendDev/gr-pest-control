@@ -1,323 +1,101 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import ServiceArea from "@/models/ServiceArea";
 
-import { connectDB } from "@/lib/db/connect";
-import SiteSettings from "@/models/SiteSettings";
-
-import Navbar from "@/components/shared/navigation/Navbar";
-import Footer from "@/components/shared/footer/Footer";
-
-import ServiceAreaBreadcrumb from "@/components/service-areas/ServiceAreaBreadcrumb";
-import ServiceAreaDetailHero from "@/components/service-areas/ServiceAreaDetailHero";
-import ServiceAreaHighlights from "@/components/service-areas/ServiceAreaHighlights";
-import ServiceAreaNearby from "@/components/service-areas/ServiceAreaNearby";
-import ServiceAreaFAQ from "@/components/service-areas/ServiceAreaFAQ";
-import ServiceAreaFinalCTA from "@/components/service-areas/ServiceAreaFinalCTA";
-
-import { getServiceAreaBySlug } from "@/features/service-areas/queries/getServiceAreaBySlug";
-
-interface ServiceAreaDetailPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata({
-  params,
-}: ServiceAreaDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-
-  await connectDB();
-
-  const area = await getServiceAreaBySlug(slug);
-
-  if (!area) {
-    return {
-      title: "Service Area Not Found",
-      description:
-        "The requested GR Pest Control service area could not be found.",
-    };
+function toSafeISOString(
+  value: Date | string | undefined | null,
+): string {
+  if (!value) {
+    return new Date().toISOString();
   }
 
-  const title =
-    area.seoTitle ||
-    `Pest Control in ${area.name} | GR Pest Control`;
+  const date = new Date(value);
 
-  const description =
-    area.seoDescription ||
-    area.shortDescription;
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+
+  return date.toISOString();
+}
+
+export async function getServiceAreaBySlug(
+  slug: string,
+) {
+  const area = await ServiceArea.findOne({
+    slug: slug.toLowerCase().trim(),
+    active: true,
+  })
+    .lean()
+    .exec();
+
+  if (!area) {
+    return null;
+  }
 
   return {
-    title,
-    description,
+    id: String(area._id),
 
-    alternates: {
-      canonical: `/service-areas/${area.slug}`,
-    },
+    name: area.name,
 
-    openGraph: {
-      title,
-      description,
-      type: "website",
-
-      ...(area.image?.url
-        ? {
-            images: [
-              {
-                url: area.image.url,
-                alt:
-                  area.image.alt ||
-                  `Pest control in ${area.name}`,
-              },
-            ],
-          }
-        : {}),
-    },
-
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-
-      ...(area.image?.url
-        ? {
-            images: [area.image.url],
-          }
-        : {}),
-    },
-  };
-}
-
-export default async function ServiceAreaDetailPage({
-  params,
-}: ServiceAreaDetailPageProps) {
-  const { slug } = await params;
-
-  await connectDB();
-
-  const [area, settingsDoc] =
-    await Promise.all([
-      getServiceAreaBySlug(slug),
-
-      SiteSettings.findOne({
-        active: true,
-      })
-        .lean()
-        .exec(),
-    ]);
-
-  /*
-   * Invalid slug OR inactive area.
-   */
-  if (!area) {
-    notFound();
-  }
-
-  /*
-   * Shared Navbar/Footer require
-   * website settings.
-   */
-  if (!settingsDoc) {
-    return (
-      <main className="min-h-screen bg-white">
-        <section className="flex min-h-screen items-center justify-center px-6">
-          <div className="text-center">
-            <h1 className="text-2xl font-extrabold text-[#062B63]">
-              Website settings not configured
-            </h1>
-
-            <p className="mt-2 text-sm text-slate-500">
-              Please configure the website
-              settings from the admin panel.
-            </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  /*
-   * Keep the same settings ViewModel shape
-   * used by the rest of the public website.
-   */
-  const settings = {
-    id: String(settingsDoc._id),
-
-    businessName:
-      settingsDoc.businessName,
+    slug: area.slug,
 
     shortDescription:
-      settingsDoc.shortDescription,
+      area.shortDescription,
 
-    logo: settingsDoc.logo
+    description:
+      area.description,
+
+    image: area.image
       ? {
-          url: settingsDoc.logo.url,
+          url: area.image.url,
           publicId:
-            settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+            area.image.publicId,
+          alt: area.image.alt,
         }
       : undefined,
 
-    email:
-      settingsDoc.email,
+    highlights:
+      area.highlights ?? [],
 
-    phone:
-      settingsDoc.phone,
+    nearbyAreas:
+      area.nearbyAreas ?? [],
 
-    whatsapp:
-      settingsDoc.whatsapp,
+    faqs:
+      (area.faqs ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            a.sortOrder - b.sortOrder,
+        )
+        .map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+          sortOrder: faq.sortOrder,
+        })),
 
-    address:
-      settingsDoc.address,
+    seoTitle:
+      area.seoTitle || "",
 
-    city:
-      settingsDoc.city,
+    seoDescription:
+      area.seoDescription || "",
 
-    state:
-      settingsDoc.state,
+    featured:
+      Boolean(area.featured),
 
-    pincode:
-      settingsDoc.pincode,
+    sortOrder:
+      area.sortOrder ?? 0,
 
-    socialLinks: {
-      facebook:
-        settingsDoc.socialLinks
-          ?.facebook ?? "",
+    createdAt: toSafeISOString(
+      area.createdAt,
+    ),
 
-      instagram:
-        settingsDoc.socialLinks
-          ?.instagram ?? "",
-
-      youtube:
-        settingsDoc.socialLinks
-          ?.youtube ?? "",
-
-      googleBusiness:
-        settingsDoc.socialLinks
-          ?.googleBusiness ?? "",
-    },
-
-    primaryCTA:
-      settingsDoc.primaryCTA ||
-      "Get a Free Quote",
-
-    currency:
-      settingsDoc.currency || "INR",
-
-    businessHours:
-      settingsDoc.businessHours?.map(
-        (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
-        }),
-      ) ?? [],
-
-    siteTitle:
-      settingsDoc.siteTitle,
-
-    siteDescription:
-      settingsDoc.siteDescription,
-
-    favicon: settingsDoc.favicon
-      ? {
-          url: settingsDoc.favicon.url,
-          publicId:
-            settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
-        }
-      : undefined,
-
-    active:
-      settingsDoc.active,
-
-    createdAt: new Date(
-      settingsDoc.createdAt,
-    ).toISOString(),
-
-    updatedAt: new Date(
-      settingsDoc.updatedAt,
-    ).toISOString(),
+    updatedAt: toSafeISOString(
+      area.updatedAt,
+    ),
   };
-
-  return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
-
-      <Navbar settings={settings} />
-
-      {/* =========================
-          BREADCRUMB
-      ========================== */}
-
-      <ServiceAreaBreadcrumb
-        areaName={area.name}
-      />
-
-      {/* =========================
-          HERO
-      ========================== */}
-
-      <ServiceAreaDetailHero
-        name={area.name}
-        shortDescription={
-          area.shortDescription
-        }
-        description={
-          area.description
-        }
-        image={area.image}
-      />
-
-      {/* =========================
-          LOCAL HIGHLIGHTS
-      ========================== */}
-
-      <ServiceAreaHighlights
-        areaName={area.name}
-        highlights={
-          area.highlights
-        }
-      />
-
-      {/* =========================
-          NEARBY AREAS
-      ========================== */}
-
-      <ServiceAreaNearby
-        areaName={area.name}
-        nearbyAreas={
-          area.nearbyAreas
-        }
-      />
-
-      {/* =========================
-          FAQ
-      ========================== */}
-
-      <ServiceAreaFAQ
-        areaName={area.name}
-        faqs={area.faqs}
-      />
-
-      {/* =========================
-          FINAL CTA
-      ========================== */}
-
-      <ServiceAreaFinalCTA
-        areaName={area.name}
-      />
-
-      {/* =========================
-          FOOTER
-      ========================== */}
-
-      <Footer settings={settings} />
-    </main>
-  );
 }
+
+export type ServiceAreaDetail =
+  Awaited<
+    ReturnType<
+      typeof getServiceAreaBySlug
+    >
+  >;
