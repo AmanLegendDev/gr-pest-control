@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import {
   Check,
   Eye,
@@ -11,6 +16,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+
 import { useRouter } from "next/navigation";
 
 import {
@@ -31,6 +37,16 @@ interface TestimonialActionsProps {
   featured: boolean;
 }
 
+interface DropdownPosition {
+  top: number;
+  left: number;
+}
+
+const DROPDOWN_WIDTH = 224;
+const DROPDOWN_HEIGHT = 260;
+const VIEWPORT_PADDING = 12;
+const GAP = 8;
+
 export default function TestimonialActions({
   testimonialId,
   active,
@@ -38,10 +54,211 @@ export default function TestimonialActions({
 }: TestimonialActionsProps) {
   const router = useRouter();
 
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [deleteOpen, setDeleteOpen] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [position, setPosition] =
+    useState<DropdownPosition | null>(
+      null,
+    );
+
+  const triggerRef =
+    useRef<HTMLButtonElement | null>(
+      null,
+    );
+
+  /*
+   * =========================================
+   * DROPDOWN POSITION
+   * =========================================
+   */
+
+  const updatePosition = () => {
+    const trigger =
+      triggerRef.current;
+
+    if (!trigger) return;
+
+    const rect =
+      trigger.getBoundingClientRect();
+
+    const viewportWidth =
+      window.innerWidth;
+
+    const viewportHeight =
+      window.innerHeight;
+
+    /*
+     * Default:
+     * Open below the trigger.
+     */
+
+    let top =
+      rect.bottom + GAP;
+
+    /*
+     * Available space.
+     */
+
+    const spaceBelow =
+      viewportHeight -
+      rect.bottom -
+      VIEWPORT_PADDING;
+
+    const spaceAbove =
+      rect.top -
+      VIEWPORT_PADDING;
+
+    /*
+     * If the menu won't fit below,
+     * open it above.
+     */
+
+    if (
+      spaceBelow < DROPDOWN_HEIGHT &&
+      spaceAbove > DROPDOWN_HEIGHT
+    ) {
+      top =
+        rect.top -
+        DROPDOWN_HEIGHT -
+        GAP;
+    }
+
+    /*
+     * Right-align menu with trigger.
+     */
+
+    let left =
+      rect.right -
+      DROPDOWN_WIDTH;
+
+    /*
+     * Keep inside left edge.
+     */
+
+    if (
+      left <
+      VIEWPORT_PADDING
+    ) {
+      left =
+        VIEWPORT_PADDING;
+    }
+
+    /*
+     * Keep inside right edge.
+     */
+
+    const maxLeft =
+      viewportWidth -
+      DROPDOWN_WIDTH -
+      VIEWPORT_PADDING;
+
+    if (left > maxLeft) {
+      left = maxLeft;
+    }
+
+    /*
+     * Final vertical safety.
+     */
+
+    const maxTop =
+      viewportHeight -
+      DROPDOWN_HEIGHT -
+      VIEWPORT_PADDING;
+
+    if (top > maxTop) {
+      top = maxTop;
+    }
+
+    if (
+      top <
+      VIEWPORT_PADDING
+    ) {
+      top =
+        VIEWPORT_PADDING;
+    }
+
+    setPosition({
+      top,
+      left,
+    });
+  };
+
+  /*
+   * =========================================
+   * OPEN / CLOSE MENU
+   * =========================================
+   */
+
+  const toggleMenu = () => {
+    if (open) {
+      setOpen(false);
+      setPosition(null);
+      return;
+    }
+
+    updatePosition();
+    setOpen(true);
+  };
+
+  /*
+   * =========================================
+   * CLOSE ON SCROLL / RESIZE
+   * =========================================
+   */
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleScroll = () => {
+      setOpen(false);
+      setPosition(null);
+    };
+
+    const handleResize = () => {
+      setOpen(false);
+      setPosition(null);
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      true,
+    );
+
+    window.addEventListener(
+      "resize",
+      handleResize,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+        true,
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleResize,
+      );
+    };
+  }, [open]);
+
+  /*
+   * =========================================
+   * TOGGLE STATUS
+   * =========================================
+   */
 
   async function handleToggleStatus() {
     setLoading(true);
@@ -49,7 +266,9 @@ export default function TestimonialActions({
 
     try {
       const result =
-        await toggleTestimonialStatus(testimonialId);
+        await toggleTestimonialStatus(
+          testimonialId,
+        );
 
       if (!result.success) {
         setError(result.message);
@@ -57,6 +276,8 @@ export default function TestimonialActions({
       }
 
       setOpen(false);
+      setPosition(null);
+
       router.refresh();
     } catch {
       setError(
@@ -66,6 +287,12 @@ export default function TestimonialActions({
       setLoading(false);
     }
   }
+
+  /*
+   * =========================================
+   * TOGGLE FEATURED
+   * =========================================
+   */
 
   async function handleToggleFeatured() {
     setLoading(true);
@@ -83,6 +310,8 @@ export default function TestimonialActions({
       }
 
       setOpen(false);
+      setPosition(null);
+
       router.refresh();
     } catch {
       setError(
@@ -92,6 +321,12 @@ export default function TestimonialActions({
       setLoading(false);
     }
   }
+
+  /*
+   * =========================================
+   * DELETE
+   * =========================================
+   */
 
   async function handleDelete() {
     setLoading(true);
@@ -110,6 +345,8 @@ export default function TestimonialActions({
 
       setDeleteOpen(false);
       setOpen(false);
+      setPosition(null);
+
       router.refresh();
     } catch {
       setError(
@@ -123,128 +360,279 @@ export default function TestimonialActions({
   return (
     <>
       <div className="relative">
+        {/* =================================
+            TRIGGER
+        ================================== */}
+
         <button
+          ref={triggerRef}
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={toggleMenu}
           aria-label="Open testimonial actions"
+          aria-expanded={open}
+          disabled={loading}
           className="
             flex
             h-9
             w-9
             items-center
             justify-center
+
             rounded-lg
+
             border
             border-slate-200
+
             bg-white
+
             text-slate-500
+
             transition
+
             hover:border-slate-300
             hover:bg-slate-50
             hover:text-[#062B63]
+
+            disabled:cursor-not-allowed
+            disabled:opacity-50
           "
         >
-          <MoreHorizontal size={18} />
+          <MoreHorizontal
+            size={18}
+          />
         </button>
 
-        {open && (
+        {/* =================================
+            DROPDOWN
+        ================================== */}
+
+        {open && position && (
           <>
-            {/* Outside click */}
-            <div
-              className="fixed inset-0 z-30"
-              onClick={() => setOpen(false)}
+            {/* Click-away layer */}
+
+            <button
+              type="button"
+              aria-label="Close actions"
+              className="
+                fixed
+                inset-0
+                z-[9998]
+
+                cursor-default
+
+                bg-transparent
+              "
+              onClick={() => {
+                setOpen(false);
+                setPosition(null);
+              }}
             />
+
+            {/* =================================
+                FIXED ACTION MENU
+
+                It is outside the table/card
+                clipping context.
+            ================================== */}
 
             <div
               className="
-                absolute
-                right-0
-                top-11
-                z-40
+                fixed
+                z-[9999]
+
                 w-56
+
                 overflow-hidden
+
                 rounded-xl
+
                 border
                 border-slate-200
+
                 bg-white
+
                 p-1.5
-                shadow-xl
+
+                shadow-[0_15px_45px_rgba(15,23,42,0.16)]
               "
+              style={{
+                top: position.top,
+                left: position.left,
+              }}
             >
-              {/* View */}
+              {/* =================================
+                  VIEW
+              ================================== */}
+
               <Link
                 href="/testimonials"
                 target="_blank"
-                className="
-                  flex
-                  items-center
-                  gap-2
-                  rounded-lg
-                  px-3
-                  py-2.5
-                  text-sm
-                  font-medium
-                  text-slate-600
-                  hover:bg-slate-50
-                "
-              >
-                <Eye size={15} />
-                View Testimonials
-              </Link>
-
-              {/* Edit */}
-              <Link
-                href={`/admin/testimonials/${testimonialId}/edit`}
-                className="
-                  flex
-                  items-center
-                  gap-2
-                  rounded-lg
-                  px-3
-                  py-2.5
-                  text-sm
-                  font-medium
-                  text-slate-600
-                  hover:bg-slate-50
-                "
-              >
-                <Pencil size={15} />
-                Edit
-              </Link>
-
-              {/* Active */}
-              <button
-                type="button"
-                disabled={loading}
-                onClick={handleToggleStatus}
+                onClick={() => {
+                  setOpen(false);
+                  setPosition(null);
+                }}
                 className="
                   flex
                   w-full
                   items-center
                   gap-2
+
                   rounded-lg
+
                   px-3
                   py-2.5
-                  text-left
+
                   text-sm
                   font-medium
                   text-slate-600
+
+                  transition
+
                   hover:bg-slate-50
+                  hover:text-[#062B63]
+                "
+              >
+                <span
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+
+                    bg-blue-50
+                    text-[#0878E8]
+                  "
+                >
+                  <Eye size={15} />
+                </span>
+
+                <span>
+                  View Testimonials
+                </span>
+              </Link>
+
+              {/* =================================
+                  EDIT
+              ================================== */}
+
+              <Link
+                href={`/admin/testimonials/${testimonialId}/edit`}
+                onClick={() => {
+                  setOpen(false);
+                  setPosition(null);
+                }}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-2
+
+                  rounded-lg
+
+                  px-3
+                  py-2.5
+
+                  text-sm
+                  font-medium
+                  text-slate-600
+
+                  transition
+
+                  hover:bg-slate-50
+                  hover:text-[#062B63]
+                "
+              >
+                <span
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+
+                    bg-blue-50
+                    text-[#0878E8]
+                  "
+                >
+                  <Pencil size={15} />
+                </span>
+
+                <span>
+                  Edit
+                </span>
+              </Link>
+
+              {/* =================================
+                  ACTIVE
+              ================================== */}
+
+              <button
+                type="button"
+                disabled={loading}
+                onClick={
+                  handleToggleStatus
+                }
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-2
+
+                  rounded-lg
+
+                  px-3
+                  py-2.5
+
+                  text-left
+
+                  text-sm
+                  font-medium
+                  text-slate-600
+
+                  transition
+
+                  hover:bg-slate-50
+
                   disabled:opacity-50
                 "
               >
-                {active ? (
-                  <X size={15} />
-                ) : (
-                  <Check size={15} />
-                )}
+                <span
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
 
-                {active
-                  ? "Deactivate"
-                  : "Activate"}
+                    bg-emerald-50
+                    text-emerald-600
+                  "
+                >
+                  {active ? (
+                    <X size={15} />
+                  ) : (
+                    <Check size={15} />
+                  )}
+                </span>
+
+                <span>
+                  {active
+                    ? "Deactivate"
+                    : "Activate"}
+                </span>
               </button>
 
-              {/* Featured */}
+              {/* =================================
+                  FEATURED
+              ================================== */}
+
               <button
                 type="button"
                 disabled={loading}
@@ -256,83 +644,182 @@ export default function TestimonialActions({
                   w-full
                   items-center
                   gap-2
+
                   rounded-lg
+
                   px-3
                   py-2.5
+
                   text-left
+
                   text-sm
                   font-medium
                   text-slate-600
+
+                  transition
+
                   hover:bg-slate-50
+
                   disabled:opacity-50
                 "
               >
-                <Star
-                  size={15}
-                  className={
-                    featured
-                      ? "fill-amber-400 text-amber-400"
-                      : ""
-                  }
-                />
+                <span
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
 
-                {featured
-                  ? "Remove Featured"
-                  : "Mark Featured"}
+                    bg-amber-50
+                    text-amber-500
+                  "
+                >
+                  <Star
+                    size={15}
+                    className={
+                      featured
+                        ? "fill-current"
+                        : ""
+                    }
+                  />
+                </span>
+
+                <span>
+                  {featured
+                    ? "Remove Featured"
+                    : "Mark Featured"}
+                </span>
               </button>
 
-              <div className="my-1 border-t border-slate-100" />
+              {/* Divider */}
 
-              {/* Delete */}
+              <div
+                className="
+                  my-1
+                  border-t
+                  border-slate-100
+                "
+              />
+
+              {/* =================================
+                  DELETE
+              ================================== */}
+
               <button
                 type="button"
                 disabled={loading}
-                onClick={() =>
-                  setDeleteOpen(true)
-                }
+                onClick={() => {
+                  setDeleteOpen(true);
+                  setOpen(false);
+                  setPosition(null);
+                }}
                 className="
                   flex
                   w-full
                   items-center
                   gap-2
+
                   rounded-lg
+
                   px-3
                   py-2.5
+
                   text-left
+
                   text-sm
                   font-semibold
                   text-red-600
+
+                  transition
+
                   hover:bg-red-50
+
                   disabled:opacity-50
                 "
               >
-                <Trash2 size={15} />
-                Delete
+                <span
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+
+                    bg-red-50
+                    text-red-600
+                  "
+                >
+                  <Trash2 size={15} />
+                </span>
+
+                <span>
+                  Delete
+                </span>
               </button>
             </div>
           </>
         )}
       </div>
 
-      {/* Error */}
+      {/* =================================
+          ERROR
+      ================================== */}
+
       {error && (
-        <div className="fixed bottom-5 right-5 z-[120] max-w-sm rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-600 shadow-lg">
+        <div
+          className="
+            fixed
+            bottom-5
+            right-5
+            z-[10000]
+
+            max-w-sm
+
+            rounded-xl
+
+            border
+            border-red-200
+
+            bg-red-50
+
+            px-4
+            py-3
+
+            text-xs
+            font-semibold
+            text-red-600
+
+            shadow-lg
+          "
+        >
           {error}
         </div>
       )}
 
-      {/* Delete Modal */}
+      {/* =================================
+          DELETE MODAL
+      ================================== */}
+
       {deleteOpen && (
         <div
           className="
             fixed
             inset-0
-            z-[100]
+            z-[11000]
+
             flex
             items-center
             justify-center
+
             bg-slate-950/40
+
             px-4
+
             backdrop-blur-sm
           "
         >
@@ -340,12 +827,18 @@ export default function TestimonialActions({
             className="
               w-full
               max-w-md
+
               rounded-2xl
+
               bg-white
+
               p-6
+
               shadow-2xl
             "
           >
+            {/* Icon */}
+
             <div
               className="
                 flex
@@ -353,7 +846,9 @@ export default function TestimonialActions({
                 w-11
                 items-center
                 justify-center
+
                 rounded-xl
+
                 bg-red-50
                 text-red-600
               "
@@ -361,16 +856,49 @@ export default function TestimonialActions({
               <Trash2 size={20} />
             </div>
 
-            <h2 className="mt-4 text-lg font-bold text-[#062B63]">
+            {/* Heading */}
+
+            <h2
+              className="
+                mt-4
+                text-lg
+                font-bold
+                text-[#062B63]
+              "
+            >
               Delete testimonial?
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              This testimonial will be permanently
-              removed. This action cannot be undone.
+            {/* Description */}
+
+            <p
+              className="
+                mt-2
+
+                text-sm
+                leading-6
+                text-slate-500
+              "
+            >
+              This testimonial will be
+              permanently removed. This
+              action cannot be undone.
             </p>
 
-            <div className="mt-6 flex justify-end gap-3">
+            {/* Buttons */}
+
+            <div
+              className="
+                mt-6
+
+                flex
+                flex-col-reverse
+                gap-3
+
+                sm:flex-row
+                sm:justify-end
+              "
+            >
               <button
                 type="button"
                 disabled={loading}
@@ -379,14 +907,23 @@ export default function TestimonialActions({
                 }
                 className="
                   h-10
+
                   rounded-lg
+
                   border
                   border-slate-200
+
                   px-4
+
                   text-sm
                   font-semibold
                   text-slate-600
+
+                  transition
+
                   hover:bg-slate-50
+
+                  disabled:opacity-50
                 "
               >
                 Cancel
@@ -400,14 +937,24 @@ export default function TestimonialActions({
                   inline-flex
                   h-10
                   items-center
+                  justify-center
                   gap-2
+
                   rounded-lg
+
                   bg-red-600
+
                   px-4
+
                   text-sm
                   font-semibold
                   text-white
+
+                  transition
+
                   hover:bg-red-700
+
+                  disabled:cursor-not-allowed
                   disabled:opacity-50
                 "
               >

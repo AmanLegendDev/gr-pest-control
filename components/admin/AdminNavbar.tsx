@@ -11,7 +11,7 @@ interface AdminNavbarProps {
 const PAGE_TITLES: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/dashboard": "Dashboard",
-  "/admin/quotes": "Quote Requests",
+  "/admin/quote-requests?status=all": "Quote Requests",
   "/admin/services": "Services",
   "/admin/service-areas": "Service Areas",
   "/admin/gallery": "Gallery",

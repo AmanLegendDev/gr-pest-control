@@ -248,6 +248,33 @@ export default function QuoteRequestModal({
     });
   }, [request, reset]);
 
+
+
+  useEffect(() => {
+  if (!request) {
+    return;
+  }
+
+  const scrollY = window.scrollY;
+  const body = document.body;
+
+  body.style.position = "fixed";
+  body.style.top = `-${scrollY}px`;
+  body.style.left = "0";
+  body.style.right = "0";
+  body.style.overflow = "hidden";
+
+  return () => {
+    body.style.position = "";
+    body.style.top = "";
+    body.style.left = "";
+    body.style.right = "";
+    body.style.overflow = "";
+
+    window.scrollTo(0, scrollY);
+  };
+}, [request]);
+
 if (!request) {
   return null;
 }
@@ -500,14 +527,15 @@ const requestId = request.id;
                     Full name
                   </label>
 
-                  <input
-                    {...register(
-                      "customer.name",
-                    )}
-                    className={
-                      inputClassName
-                    }
-                  />
+               <input
+  {...register("customer.name")}
+  readOnly={!editMode}
+  className={`${inputClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
 
                   {errors.customer
                     ?.name && (
@@ -536,12 +564,15 @@ const requestId = request.id;
                       className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                     />
 
-                    <input
-                      {...register(
-                        "customer.phone",
-                      )}
-                      className={`${inputClassName} pl-10`}
-                    />
+                 <input
+  {...register("customer.phone")}
+  readOnly={!editMode}
+  className={`${inputClassName} pl-10 ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
                   </div>
 
                   {errors.customer
@@ -571,13 +602,16 @@ const requestId = request.id;
                       className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                     />
 
-                    <input
-                      type="email"
-                      {...register(
-                        "customer.email",
-                      )}
-                      className={`${inputClassName} pl-10`}
-                    />
+                  <input
+  type="email"
+  {...register("customer.email")}
+  readOnly={!editMode}
+  className={`${inputClassName} pl-10 ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
                   </div>
 
                   {errors.customer
@@ -701,13 +735,12 @@ const requestId = request.id;
                       p-3.5
                     "
                   >
-                    <input
-                      type="radio"
-                      value="commercial"
-                      {...register(
-                        "propertyType",
-                      )}
-                    />
+                   <input
+  type="radio"
+  value="residential"
+  {...register("propertyType")}
+  disabled={!editMode}
+/>
 
                     <span className="text-sm font-bold text-[#062B63]">
                       Commercial
@@ -754,14 +787,15 @@ const requestId = request.id;
                     Suburb
                   </label>
 
-                  <input
-                    {...register(
-                      "location.suburb",
-                    )}
-                    className={
-                      inputClassName
-                    }
-                  />
+               <input
+  {...register("location.suburb")}
+  readOnly={!editMode}
+  className={`${inputClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
 
                   {errors.location
                     ?.suburb && (
@@ -823,15 +857,15 @@ const requestId = request.id;
                 </h3>
               </div>
 
-              <textarea
-                {...register(
-                  "pestProblem",
-                )}
-                className={
-                  textareaClassName
-                }
-                placeholder="Describe the pest problem..."
-              />
+         <textarea
+  {...register("pestProblem")}
+  readOnly={!editMode}
+  className={`${textareaClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
 
               {errors.pestProblem && (
                 <p
@@ -888,15 +922,16 @@ const requestId = request.id;
                     Preferred date
                   </label>
 
-                  <input
-                    type="date"
-                    {...register(
-                      "preferredDate",
-                    )}
-                    className={
-                      inputClassName
-                    }
-                  />
+            <input
+  type="date"
+  {...register("preferredDate")}
+  readOnly={!editMode}
+  className={`${inputClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
 
                   {errors.preferredDate && (
                     <p
@@ -922,16 +957,16 @@ const requestId = request.id;
                     Preferred time
                   </label>
 
-                  <input
-                    type="text"
-                    {...register(
-                      "preferredTime",
-                    )}
-                    className={
-                      inputClassName
-                    }
-                    placeholder="e.g. Morning / 10:00 AM"
-                  />
+                <input
+  type="text"
+  {...register("preferredTime")}
+  readOnly={!editMode}
+  className={`${inputClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+/>
 
                   {errors.preferredTime && (
                     <p
@@ -962,10 +997,15 @@ const requestId = request.id;
                 </h3>
               </div>
 
-              <select
-                {...register("status")}
-                className={inputClassName}
-              >
+            <select
+  {...register("status")}
+  disabled={!editMode}
+  className={`${inputClassName} ${
+    !editMode
+      ? "cursor-default bg-slate-100 text-slate-500"
+      : ""
+  }`}
+>
                 <option value="pending">
                   Pending
                 </option>

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { LogOut, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
@@ -14,6 +15,10 @@ import {
 interface AdminSidebarProps {
   open: boolean;
   onClose: () => void;
+  logo?: {
+    url: string;
+    alt: string;
+  };
 }
 
 function isActiveRoute(
@@ -32,8 +37,13 @@ function isActiveRoute(
 
 function SidebarContent({
   onNavigate,
+  logo,
 }: {
   onNavigate?: () => void;
+  logo?: {
+    url: string;
+    alt: string;
+  };
 }) {
   const pathname = usePathname();
 
@@ -58,24 +68,36 @@ function SidebarContent({
             focus-visible:ring-offset-2
           "
         >
-          <div
-            className="
-              flex
-              h-11
-              w-11
-              shrink-0
-              items-center
-              justify-center
-              rounded-xl
-              bg-[#0878E8]
-              text-sm
-              font-extrabold
-              text-white
-              shadow-[0_8px_20px_rgba(8,120,232,0.18)]
-            "
-          >
-            GR
-          </div>
+      <div
+  className="
+    relative
+    flex
+    h-11
+    w-11
+    shrink-0
+    items-center
+    justify-center
+    overflow-hidden
+    rounded-xl
+    bg-white
+    ring-1
+    ring-slate-200
+  "
+>
+  {logo?.url ? (
+    <Image
+      src={logo.url}
+      alt={logo.alt || "GR Pest Control"}
+      fill
+      sizes="44px"
+      className="object-contain p-1"
+    />
+  ) : (
+    <span className="text-sm font-extrabold text-[#0878E8]">
+      GR
+    </span>
+  )}
+</div>
 
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold tracking-[-0.02em] text-[#062B63]">
@@ -310,6 +332,7 @@ function SidebarContent({
 export default function AdminSidebar({
   open,
   onClose,
+  logo,
 }: AdminSidebarProps) {
   /* =====================================================
      ESC TO CLOSE MOBILE DRAWER
@@ -379,7 +402,10 @@ export default function AdminSidebar({
           lg:block
         "
       >
-        <SidebarContent />
+       <SidebarContent
+  logo={logo}
+  onNavigate={onClose}
+/>
       </aside>
 
       {/* ===================================================

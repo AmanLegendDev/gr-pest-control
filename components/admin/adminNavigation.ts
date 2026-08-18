@@ -40,7 +40,7 @@ export const ADMIN_NAVIGATION: AdminNavigationSection[] = [
     items: [
       {
         label: "Quote Requests",
-        href: "/admin/quotes",
+        href: "/admin/quote-requests?status=all",
         icon: ClipboardList,
       },
     ],

@@ -106,150 +106,246 @@ export default async function AdminFAQPage() {
             TABLE
         ========================== */}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {/* =========================
+    FAQ LIST
+========================== */}
 
-          <div className="border-b border-slate-200 px-5 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-bold text-[#062B63]">
-                  All FAQs
-                </h2>
+<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-                <p className="mt-1 text-xs text-slate-400">
-                  {faqs.length} FAQ
-                  {faqs.length === 1 ? "" : "s"}
-                  {categories > 0 &&
-                    ` · ${categories} categor${
-                      categories === 1
-                        ? "y"
-                        : "ies"
-                    }`}
+  {/* Header */}
+  <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+    <div>
+      <h2 className="font-bold text-[#062B63]">
+        All FAQs
+      </h2>
+
+      <p className="mt-1 text-xs text-slate-400">
+        {faqs.length} FAQ
+        {faqs.length === 1 ? "" : "s"}
+        {categories > 0 &&
+          ` · ${categories} categor${
+            categories === 1 ? "y" : "ies"
+          }`}
+      </p>
+    </div>
+  </div>
+
+  {faqs.length === 0 ? (
+    <EmptyState />
+  ) : (
+    <>
+      {/* =================================
+          MOBILE FAQ CARDS
+      ================================== */}
+
+      <div className="divide-y divide-slate-100 sm:hidden">
+        {faqs.map((faq) => (
+          <div
+            key={faq.id}
+            className="p-4"
+          >
+            <div className="flex items-start gap-3">
+
+              {/* Icon */}
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0878E8]">
+                <CircleHelp size={17} />
+              </div>
+
+              {/* Content */}
+              <div className="min-w-0 flex-1">
+
+                {/* Question */}
+                <p className="break-words text-sm font-bold leading-5 text-[#062B63]">
+                  {faq.question}
                 </p>
+
+                {/* Answer */}
+                <p className="mt-1.5 line-clamp-2 break-words text-xs leading-5 text-slate-400">
+                  {faq.answer}
+                </p>
+
+                {/* Meta */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+
+                  {faq.category && (
+                    <span className="max-w-full truncate rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">
+                      {faq.category}
+                    </span>
+                  )}
+
+                  <span
+                    className={
+                      faq.active
+                        ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-600"
+                        : "inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500"
+                    }
+                  >
+                    {faq.active
+                      ? "Active"
+                      : "Inactive"}
+                  </span>
+
+                  {faq.featured && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-600">
+                      <Star
+                        size={10}
+                        className="fill-current"
+                      />
+                      Featured
+                    </span>
+                  )}
+
+                </div>
+
+                {/* Bottom row */}
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+
+                  <span className="text-[11px] font-semibold text-slate-400">
+                    Order #{faq.sortOrder}
+                  </span>
+
+                  <FAQActions
+                    faqId={faq.id}
+                    active={faq.active}
+                    featured={faq.featured}
+                  />
+
+                </div>
+
               </div>
             </div>
           </div>
+        ))}
+      </div>
 
-          {faqs.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[850px]">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/70 text-left">
-                    <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Question
-                    </th>
 
-                    <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Category
-                    </th>
+      {/* =================================
+          DESKTOP TABLE
+      ================================== */}
 
-                    <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Order
-                    </th>
+      <div className="hidden overflow-x-auto sm:block">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/70 text-left">
 
-                    <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Status
-                    </th>
+              <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Question
+              </th>
 
-                    <th className="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+              <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Category
+              </th>
 
-                <tbody className="divide-y divide-slate-100">
-                  {faqs.map((faq) => (
-                    <tr
-                      key={faq.id}
-                      className="group transition hover:bg-slate-50/60"
-                    >
-                      {/* Question */}
+              <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Order
+              </th>
 
-                      <td className="max-w-[420px] px-5 py-4">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#0878E8]">
-                            <CircleHelp
-                              size={15}
-                            />
-                          </div>
+              <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Status
+              </th>
 
-                          <div className="min-w-0">
-                            <p className="line-clamp-2 text-sm font-bold text-[#062B63]">
-                              {faq.question}
-                            </p>
+              <th className="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Actions
+              </th>
 
-                            <p className="mt-1 line-clamp-1 text-xs text-slate-400">
-                              {faq.answer}
-                            </p>
+            </tr>
+          </thead>
 
-                            {faq.featured && (
-                              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600">
-                                <Star
-                                  size={10}
-                                  className="fill-current"
-                                />
-                                Featured
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
+          <tbody className="divide-y divide-slate-100">
 
-                      {/* Category */}
+            {faqs.map((faq) => (
+              <tr
+                key={faq.id}
+                className="group transition hover:bg-slate-50/60"
+              >
 
-                      <td className="px-5 py-4">
-                        {faq.category ? (
-                          <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                            {faq.category}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-300">
-                            —
-                          </span>
-                        )}
-                      </td>
+                {/* Question */}
+                <td className="max-w-[420px] px-5 py-4">
+                  <div className="flex items-start gap-3">
 
-                      {/* Sort */}
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#0878E8]">
+                      <CircleHelp size={15} />
+                    </div>
 
-                      <td className="px-5 py-4">
-                        <span className="text-sm font-semibold text-slate-600">
-                          {faq.sortOrder}
+                    <div className="min-w-0">
+
+                      <p className="line-clamp-2 break-words text-sm font-bold text-[#062B63]">
+                        {faq.question}
+                      </p>
+
+                      <p className="mt-1 line-clamp-1 text-xs text-slate-400">
+                        {faq.answer}
+                      </p>
+
+                      {faq.featured && (
+                        <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600">
+                          <Star
+                            size={10}
+                            className="fill-current"
+                          />
+                          Featured
                         </span>
-                      </td>
+                      )}
 
-                      {/* Status */}
+                    </div>
+                  </div>
+                </td>
 
-                      <td className="px-5 py-4">
-                        <span
-                          className={
-                            faq.active
-                              ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600"
-                              : "inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500"
-                          }
-                        >
-                          {faq.active
-                            ? "Active"
-                            : "Inactive"}
-                        </span>
-                      </td>
+                {/* Category */}
+                <td className="px-5 py-4">
+                  {faq.category ? (
+                    <span className="inline-flex max-w-[180px] truncate rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                      {faq.category}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-300">
+                      —
+                    </span>
+                  )}
+                </td>
 
-                      {/* Actions */}
+                {/* Sort */}
+                <td className="px-5 py-4">
+                  <span className="text-sm font-semibold text-slate-600">
+                    {faq.sortOrder}
+                  </span>
+                </td>
 
-                      <td className="px-5 py-4 text-right">
-                        <FAQActions
-                          faqId={faq.id}
-                          active={faq.active}
-                          featured={faq.featured}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                {/* Status */}
+                <td className="px-5 py-4">
+                  <span
+                    className={
+                      faq.active
+                        ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600"
+                        : "inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500"
+                    }
+                  >
+                    {faq.active
+                      ? "Active"
+                      : "Inactive"}
+                  </span>
+                </td>
+
+                {/* Actions */}
+                <td className="px-5 py-4 text-right">
+                  <FAQActions
+                    faqId={faq.id}
+                    active={faq.active}
+                    featured={faq.featured}
+                  />
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+        </table>
+      </div>
+
+    </>
+  )}
+
+</div>
 
       </div>
     </main>

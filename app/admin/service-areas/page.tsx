@@ -344,8 +344,7 @@ export default async function ServiceAreasPage({
               LIST
           ========================== */}
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.035)]">
-
+<div className="mt-6 overflow-visible rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.035)]">
             {/* Desktop Header */}
 
             <div className="hidden grid-cols-[minmax(280px,1fr)_150px_120px_120px_140px] items-center gap-4 border-b border-slate-100 bg-slate-50/70 px-5 py-3 text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-400 lg:grid">
