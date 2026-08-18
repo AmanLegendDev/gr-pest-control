@@ -17,6 +17,7 @@ export async function getDashboardStats(): Promise<AdminDashboardStats> {
     inProgress,
     completed,
     cancelled,
+     archived,
 
     services,
     serviceAreas,
@@ -27,29 +28,40 @@ export async function getDashboardStats(): Promise<AdminDashboardStats> {
   ] = await Promise.all([
     /* =========================
        QUOTE REQUESTS
+       Archived requests excluded
     ========================== */
 
-    QuoteRequest.countDocuments(),
+   QuoteRequest.countDocuments({
+  archived: { $ne: true },
+}),
 
-    QuoteRequest.countDocuments({
-      status: "pending",
-    }),
+QuoteRequest.countDocuments({
+  archived: { $ne: true },
+  status: "pending",
+}),
 
-    QuoteRequest.countDocuments({
-      status: "in-progress",
-    }),
+QuoteRequest.countDocuments({
+  archived: { $ne: true },
+  status: "in-progress",
+}),
 
-    QuoteRequest.countDocuments({
-      status: "completed",
-    }),
+QuoteRequest.countDocuments({
+  archived: { $ne: true },
+  status: "completed",
+}),
 
-    QuoteRequest.countDocuments({
-      status: "cancelled",
-    }),
+QuoteRequest.countDocuments({
+  archived: { $ne: true },
+  status: "cancelled",
+}),
+
+QuoteRequest.countDocuments({
+  archived: true,
+}),
 
     /* =========================
        CMS COUNTS
-    ========================== */
+       ========================== */
 
     Service.countDocuments(),
 
@@ -65,17 +77,17 @@ export async function getDashboardStats(): Promise<AdminDashboardStats> {
   ]);
 
   return {
-    total,
-    pending,
-    inProgress,
-    completed,
-    cancelled,
-
-    services,
-    serviceAreas,
-    blogs,
-    gallery,
-    testimonials,
-    faqs,
-  };
+  total,
+  pending,
+  inProgress,
+  completed,
+  cancelled,
+  archived,
+  services,
+  serviceAreas,
+  blogs,
+  gallery,
+  testimonials,
+  faqs,
+};
 }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import {
   ArrowRight,
   BookOpen,
+  Archive,
   CalendarCheck2,
   Camera,
   CheckCircle2,
@@ -68,6 +69,17 @@ const BOOKING_CARDS = [
     icon: LayoutDashboard,
     tone: "navy",
   },
+
+  {
+  key: "archived",
+  title: "Archived Requests",
+  description: "View quote requests that have been archived.",
+  href: "/admin/quote-requests/archive",
+  icon: Archive,
+  tone: "slate",
+},
+
+
 ] as const;
 
 const MANAGEMENT_CARDS = [
@@ -166,6 +178,14 @@ function getToneClasses(
         number: "text-red-500",
         hover: "hover:border-red-200 hover:shadow-red-100/50",
       };
+
+      case "slate":
+  return {
+    icon: "bg-slate-100 text-slate-600",
+    number: "text-slate-700",
+    hover:
+      "hover:border-slate-300 hover:shadow-slate-200/60",
+  };
 
     default:
       return {
@@ -289,8 +309,8 @@ export default async function AdminDashboardPage() {
             </Link>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {BOOKING_CARDS.map((card) => {
+<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+   {BOOKING_CARDS.map((card) => {
               const Icon = card.icon;
               const tone =
                 getToneClasses(card.tone);

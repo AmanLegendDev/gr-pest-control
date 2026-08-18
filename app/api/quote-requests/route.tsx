@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
+import {
+  sendNewQuoteRequestEmails,
+} from "@/lib/email/quote-request-emails";
+
 import { connectDB } from "@/lib/db/connect";
 import QuoteRequest from "@/models/QuoteRequest";
 import Sequence from "@/models/Sequence";
@@ -112,76 +116,102 @@ export async function POST(
        Sequence is updated atomically.
     ====================================================== */
 
-    const latestQuote =
-      await QuoteRequest.findOne({})
-        .sort({
-          requestNumber: -1,
-        })
-        .select({
-          requestNumber: 1,
-        })
-        .lean()
-        .exec();
+   /* =====================================================
+   GENERATE REQUEST NUMBER
 
-    const currentHighest =
-      latestQuote?.requestNumber ?? 0;
+   Sequence is atomic.
 
-    const sequence =
-      await Sequence.findOneAndUpdate(
-        {
-          name: "quote-request",
-        },
-        {
-          $max: {
-            value: currentHighest,
-          },
-        },
-        {
-          new: false,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        },
-      ).exec();
+   Empty database:
+   → 1
 
-    const sequenceValue =
-      sequence?.value ?? 0;
+   Existing highest:
+   → next number
 
-    const nextRequestNumber =
-      Math.max(
-        currentHighest,
-        sequenceValue,
-      ) + 1;
+   Archived requests still remain in QuoteRequest,
+   therefore they continue to count.
 
-    const updatedSequence =
-      await Sequence.findOneAndUpdate(
-        {
-          name: "quote-request",
-        },
-        {
-          $set: {
-            value: nextRequestNumber,
-          },
-        },
-        {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        },
-      )
-        .lean()
-        .exec();
+   Example:
+   GR-1
+   GR-2
+   GR-3
+   GR-4 archived
 
-    if (!updatedSequence) {
-      throw new Error(
-        "Unable to generate quote request number.",
-      );
-    }
+   Next:
+   GR-5
+===================================================== */
 
-    const requestNumber =
-      updatedSequence.value;
+const latestQuote =
+  await QuoteRequest.findOne({})
+    .sort({
+      requestNumber: -1,
+    })
+    .select({
+      requestNumber: 1,
+    })
+    .lean()
+    .exec();
 
-    const referenceNumber =
-      `GR-${requestNumber}`;
+const currentHighest =
+  latestQuote?.requestNumber ?? 0;
+
+/*
+ * First make sure the sequence is never
+ * behind the highest existing request.
+ *
+ * This is safe because $max is atomic.
+ */
+await Sequence.findOneAndUpdate(
+  {
+    name: "quote-request",
+  },
+  {
+    $max: {
+      value: currentHighest,
+    },
+  },
+  {
+    upsert: true,
+    setDefaultsOnInsert: true,
+  },
+).exec();
+
+/*
+ * Now increment atomically.
+ *
+ * Two customers submitting at the same time
+ * cannot receive the same number.
+ */
+const updatedSequence =
+  await Sequence.findOneAndUpdate(
+    {
+      name: "quote-request",
+    },
+    {
+      $inc: {
+        value: 1,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  )
+    .lean()
+    .exec();
+
+if (!updatedSequence) {
+  throw new Error(
+    "Unable to generate quote request number.",
+  );
+}
+
+const requestNumber =
+  updatedSequence.value;
+
+const referenceNumber =
+  `GR-${requestNumber}`;
+    
 
     /* =====================================================
        CREATE QUOTE REQUEST
@@ -236,6 +266,64 @@ export async function POST(
 
         status: "pending",
       });
+
+
+
+
+
+      /* =====================================================
+   SEND EMAIL NOTIFICATIONS
+
+   Database creation has already succeeded.
+   Email failure must NOT delete the request.
+===================================================== */
+
+try {
+  await sendNewQuoteRequestEmails({
+    id: String(quote._id),
+
+    referenceNumber:
+      quote.referenceNumber,
+
+    customer: {
+      name: quote.customer.name,
+      phone: quote.customer.phone,
+      email: quote.customer.email,
+    },
+
+    service: {
+      title: quote.service.title,
+    },
+
+    propertyType:
+      quote.propertyType,
+
+    location: {
+      suburb:
+        quote.location.suburb,
+
+      address:
+        quote.location.address,
+    },
+
+    pestProblem:
+      quote.pestProblem,
+
+    preferredDate:
+      quote.preferredDate,
+
+    preferredTime:
+      quote.preferredTime,
+
+    createdAt:
+      quote.createdAt,
+  });
+} catch (emailError) {
+  console.error(
+    "QUOTE_REQUEST_EMAIL_ERROR",
+    emailError,
+  );
+}
 
     /* =====================================================
        SUCCESS RESPONSE

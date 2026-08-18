@@ -12,11 +12,7 @@ import type {
 
 export interface GetQuoteRequestsOptions {
   status?: QuoteRequestStatus | "all";
-
   search?: string;
-
-  archived?: boolean;
-
   limit?: number;
 }
 
@@ -30,7 +26,6 @@ export async function getQuoteRequests(
   const {
     status = "all",
     search = "",
-    archived = false,
     limit = 100,
   } = options;
 
@@ -45,13 +40,15 @@ export async function getQuoteRequests(
 
   /* -------------------------------------------------------
      Base filter
+     
+     IMPORTANT:
+     Normal admin requests must NEVER include
+     archived requests.
   ------------------------------------------------------- */
 
   const filter: Record<string, unknown> = {
-  archived: {
-    $ne: true,
-  },
-};
+    archived: false,
+  };
 
   /* -------------------------------------------------------
      Status filter
@@ -65,8 +62,7 @@ export async function getQuoteRequests(
      Search
   ------------------------------------------------------- */
 
-  const normalizedSearch =
-    search.trim();
+  const normalizedSearch = search.trim();
 
   if (normalizedSearch) {
     const escapedSearch =
@@ -161,8 +157,7 @@ export async function getQuoteRequests(
           request.customer.phone,
 
         email:
-          request.customer.email ??
-          "",
+          request.customer.email ?? "",
       },
 
       service: {

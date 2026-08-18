@@ -4,9 +4,9 @@ export interface AdminDashboardStats {
   inProgress: number;
   completed: number;
   cancelled: number;
+  archived: number;
 
-
-    services: number;
+  services: number;
   serviceAreas: number;
   blogs: number;
   gallery: number;

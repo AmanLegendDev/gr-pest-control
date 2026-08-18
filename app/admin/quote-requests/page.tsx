@@ -70,7 +70,7 @@ export default async function QuoteRequestsPage({
     await getQuoteRequests({
       status,
       search,
-      archived: false,
+    
       limit: 200,
     });
 
