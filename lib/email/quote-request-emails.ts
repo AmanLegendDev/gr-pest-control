@@ -390,61 +390,77 @@ export async function sendNewQuoteRequestEmails(
       </p>
     `);
 
-  const results = await Promise.allSettled([
-    resend.emails.send(
-      {
-        from: EMAIL_FROM,
-        to: [ADMIN_EMAIL],
-        subject:
-          `New Quote Request — ${quote.referenceNumber}`,
-        html: adminHtml,
-        replyTo:
-          quote.customer.email || undefined,
-        tags: [
-          {
-            name: "event",
-            value: "quote-request-created",
-          },
-          {
-            name: "reference",
-            value: quote.referenceNumber,
-          },
-        ],
-      },
-      {
-        idempotencyKey:
-          `quote-request-admin/${quote.id}`,
-      },
-    ),
+const results = await Promise.allSettled([
+  resend.emails.send(
+    {
+      from: EMAIL_FROM,
+      to: [ADMIN_EMAIL],
+      subject: `New Quote Request — ${quote.referenceNumber}`,
+      html: adminHtml,
+      replyTo:
+        quote.customer.email || undefined,
+      tags: [
+        {
+          name: "event",
+          value: "quote-request-created",
+        },
+        {
+          name: "reference",
+          value: quote.referenceNumber,
+        },
+      ],
+    },
+    {
+      idempotencyKey:
+        `quote-request-admin/${quote.id}`,
+    },
+  ),
 
-    quote.customer.email
-      ? resend.emails.send(
-          {
-            from: EMAIL_FROM,
-            to: [quote.customer.email],
-            subject:
-              `Your Quote Request — ${quote.referenceNumber}`,
-            html: customerHtml,
-            tags: [
-              {
-                name: "event",
-                value: "quote-request-created",
-              },
-              {
-                name: "reference",
-                value: quote.referenceNumber,
-              },
-            ],
-          },
-          {
-            idempotencyKey:
-              `quote-request-customer/${quote.id}`,
-          },
-        )
-      : Promise.resolve(null),
-  ]);
+  quote.customer.email
+    ? resend.emails.send(
+        {
+          from: EMAIL_FROM,
+          to: [quote.customer.email],
+          subject:
+            `Your Quote Request — ${quote.referenceNumber}`,
+          html: customerHtml,
+          tags: [
+            {
+              name: "event",
+              value: "quote-request-created",
+            },
+            {
+              name: "reference",
+              value: quote.referenceNumber,
+            },
+          ],
+        },
+        {
+          idempotencyKey:
+            `quote-request-customer/${quote.id}`,
+        },
+      )
+    : Promise.resolve(null),
+]);
 
-  return results;
+console.log(
+  "QUOTE_EMAIL_RESULTS",
+  JSON.stringify(results, null, 2),
+);
+
+const failed = results.filter(
+  (result) =>
+    result.status === "rejected",
+);
+
+if (failed.length > 0) {
+  console.error(
+    "QUOTE_EMAIL_SEND_FAILED",
+    failed,
+  );
+}
+
+return results;
 }
 
 /* =========================================================
