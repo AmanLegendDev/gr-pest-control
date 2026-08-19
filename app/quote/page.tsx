@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { connectDB } from "@/lib/db/connect";
 import Service from "@/models/Service";
 import SiteSettings from "@/models/SiteSettings";
@@ -9,45 +11,86 @@ import QuoteForm from "@/components/quote/QuoteForm";
 import QuoteIntro from "@/components/quote/QuoteIntro";
 import QuoteTrustInfo from "@/components/quote/QuoteTrustInfo";
 
-export const dynamic = "force-dynamic";
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
 
-export const metadata = {
-  title: "Get a Free Quote",
-  description:
-    "Request a pest control quote from GR Pest Control.",
-};
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
 
+import JsonLd from "@/components/seo/JsonLd";
 
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
+
+export const dynamic =
+  "force-dynamic";
+
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Get a Free Pest Control Quote Sydney | GR Pest Control",
+
+    description:
+      "Request a free pest control quote from GR Pest Control for your home or business in Sydney. Tell us about your property and pest problem and our team will review your request.",
+
+    path: "/quote",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Request a Free Pest Control Quote in Sydney",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function QuotePage() {
-
-    
-
-    
   await connectDB();
 
-  const [services, settingsDoc] =
-    await Promise.all([
-      Service.find({
-        active: true,
-      })
-        .select({
-          _id: 1,
-          title: 1,
-          slug: 1,
-        })
-        .sort({
-          sortOrder: 1,
-          createdAt: -1,
-        })
-        .lean(),
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
-      SiteSettings.findOne({
-        active: true,
+  const [
+    services,
+    settingsDoc,
+  ] = await Promise.all([
+    Service.find({
+      active: true,
+    })
+      .select({
+        _id: 1,
+        title: 1,
+        slug: 1,
       })
-        .lean()
-        .exec(),
-    ]);
+      .sort({
+        sortOrder: 1,
+        createdAt: -1,
+      })
+      .lean()
+      .exec(),
+
+    SiteSettings.findOne({
+      active: true,
+    })
+      .lean()
+      .exec(),
+  ]);
+
+  /* =======================================================
+     SETTINGS FALLBACK
+  ======================================================= */
 
   if (!settingsDoc) {
     return (
@@ -59,8 +102,7 @@ export default async function QuotePage() {
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              Please configure the website settings
-              from the admin panel.
+              Please configure the website settings from the admin panel.
             </p>
           </div>
         </section>
@@ -68,54 +110,72 @@ export default async function QuotePage() {
     );
   }
 
-  const settings = {
-  id: String(settingsDoc._id),
+  /* =======================================================
+     SETTINGS
+  ======================================================= */
 
-  businessName:
-    settingsDoc.businessName,
+  const settings = {
+    id:
+      String(
+        settingsDoc._id,
+      ),
+
+    businessName:
+      settingsDoc.businessName,
 
     shortDescription:
       settingsDoc.shortDescription,
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
-    email: settingsDoc.email,
+    email:
+      settingsDoc.email,
 
-    phone: settingsDoc.phone,
+    phone:
+      settingsDoc.phone,
 
-    whatsapp: settingsDoc.whatsapp,
+    whatsapp:
+      settingsDoc.whatsapp,
 
-    address: settingsDoc.address,
+    address:
+      settingsDoc.address,
 
-    city: settingsDoc.city,
+    city:
+      settingsDoc.city,
 
-    state: settingsDoc.state,
+    state:
+      settingsDoc.state,
 
-    pincode: settingsDoc.pincode,
+    pincode:
+      settingsDoc.pincode,
 
     socialLinks: {
       facebook:
-        settingsDoc.socialLinks?.facebook ??
-        "",
+        settingsDoc.socialLinks
+          ?.facebook ?? "",
 
       instagram:
-        settingsDoc.socialLinks?.instagram ??
-        "",
+        settingsDoc.socialLinks
+          ?.instagram ?? "",
 
       youtube:
-        settingsDoc.socialLinks?.youtube ??
-        "",
+        settingsDoc.socialLinks
+          ?.youtube ?? "",
 
       googleBusiness:
-        settingsDoc.socialLinks?.googleBusiness ??
-        "",
+        settingsDoc.socialLinks
+          ?.googleBusiness ?? "",
     },
 
     primaryCTA:
@@ -123,15 +183,23 @@ export default async function QuotePage() {
       "Get a Free Quote",
 
     currency:
-      settingsDoc.currency || "INR",
+      settingsDoc.currency ||
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -143,64 +211,159 @@ export default async function QuotePage() {
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
-    active: settingsDoc.active,
+    active:
+      settingsDoc.active,
 
-createdAt: new Date(
-  settingsDoc.createdAt,
-).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-updatedAt: new Date(
-  settingsDoc.updatedAt,
-).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
 
+  /* =======================================================
+     SERVICE OPTIONS
+  ======================================================= */
+
   const serviceOptions =
-    services.map((service) => ({
-      id: String(service._id),
-      title: service.title,
-      slug: service.slug,
-    }));
+    services.map(
+      (service) => ({
+        id:
+          String(
+            service._id,
+          ),
+
+        title:
+          service.title,
+
+        slug:
+          service.slug,
+      }),
+    );
+
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbSchema =
+    createBreadcrumbSchema([
+      {
+        name:
+          "Home",
+
+        url:
+          "/",
+      },
+
+      {
+        name:
+          "Get a Free Quote",
+
+        url:
+          "/quote",
+      },
+    ]);
+
+  /* =======================================================
+     WEB PAGE
+  ======================================================= */
+
+  const webPageSchema =
+    createWebPageSchema({
+      name:
+        "Get a Free Pest Control Quote Sydney | GR Pest Control",
+
+      description:
+        "Request a free pest control quote from GR Pest Control for your home or business in Sydney. Tell us about your property and pest problem and our team will review your request.",
+
+      url:
+        "/quote",
+    });
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      breadcrumbSchema,
+      webPageSchema,
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVIGATION
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar settings={settings} />
+      <JsonLd
+        data={
+          jsonLd
+        }
+      />
 
-      {/* =========================
-          QUOTE CONTENT
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVIGATION
+        ================================================== */}
 
-      <section className="px-4 pb-20 pt-32 sm:px-6 sm:pb-24 lg:px-8 lg:pt-36">
-        <div className="mx-auto max-w-4xl">
-          <QuoteIntro />
+        <Navbar
+          settings={
+            settings
+          }
+        />
 
-          <QuoteForm
-            services={serviceOptions}
-          />
+        {/* =================================================
+            QUOTE CONTENT
+        ================================================== */}
 
-          <QuoteTrustInfo
-            businessName={
-              settings.businessName
-            }
-          />
-        </div>
-      </section>
+        <section className="px-4 pb-20 pt-32 sm:px-6 sm:pb-24 lg:px-8 lg:pt-36">
+          <div className="mx-auto max-w-4xl">
+            <QuoteIntro />
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+            <QuoteForm
+              services={
+                serviceOptions
+              }
+            />
 
-      <Footer settings={settings} />
-    </main>
+            <QuoteTrustInfo
+              businessName={
+                settings.businessName
+              }
+            />
+          </div>
+        </section>
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            settings
+          }
+        />
+      </main>
+    </>
   );
 }

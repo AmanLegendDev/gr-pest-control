@@ -14,7 +14,26 @@ import ServiceAreaNearby from "@/components/service-areas/ServiceAreaNearby";
 import ServiceAreaFAQ from "@/components/service-areas/ServiceAreaFAQ";
 import ServiceAreaFinalCTA from "@/components/service-areas/ServiceAreaFinalCTA";
 
-import { getServiceAreaBySlug } from "@/features/service-areas/queries/getServiceAreaBySlug";
+import {
+  getServiceAreaBySlug,
+} from "@/features/service-areas/queries/getServiceAreaBySlug";
+
+import {
+  createServiceAreaMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createServiceSchema,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 interface ServiceAreaDetailPageProps {
   params: Promise<{
@@ -22,7 +41,15 @@ interface ServiceAreaDetailPageProps {
   }>;
 }
 
+/* =========================================================
+   RENDERING
+========================================================= */
+
 export const dynamic = "force-dynamic";
+
+/* =========================================================
+   METADATA
+========================================================= */
 
 export async function generateMetadata({
   params,
@@ -31,64 +58,60 @@ export async function generateMetadata({
 
   await connectDB();
 
-  const area = await getServiceAreaBySlug(slug);
+  const area =
+    await getServiceAreaBySlug(slug);
 
+  /*
+   * Invalid or unavailable location.
+   * Keep this out of the search index.
+   */
   if (!area) {
     return {
       title: "Service Area Not Found",
+
       description:
         "The requested GR Pest Control service area could not be found.",
+
+      robots: {
+        index: false,
+        follow: false,
+
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      },
     };
   }
 
-  const title =
-    area.seoTitle ||
-    `Pest Control in ${area.name} | GR Pest Control`;
+  return createServiceAreaMetadata({
+    name:
+      area.name,
 
-  const description =
-    area.seoDescription ||
-    area.shortDescription;
+    seoTitle:
+      area.seoTitle,
 
-  return {
-    title,
-    description,
+    seoDescription:
+      area.seoDescription,
 
-    alternates: {
-      canonical: `/service-areas/${area.slug}`,
-    },
+    shortDescription:
+      area.shortDescription,
 
-    openGraph: {
-      title,
-      description,
-      type: "website",
+    slug:
+      area.slug,
 
-      ...(area.image?.url
-        ? {
-            images: [
-              {
-                url: area.image.url,
-                alt:
-                  area.image.alt ||
-                  `Pest control in ${area.name}`,
-              },
-            ],
-          }
-        : {}),
-    },
+    image:
+      area.image?.url,
 
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-
-      ...(area.image?.url
-        ? {
-            images: [area.image.url],
-          }
-        : {}),
-    },
-  };
+    imageAlt:
+      area.image?.alt ||
+      `${area.name}, NSW`,
+  });
 }
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function ServiceAreaDetailPage({
   params,
@@ -97,28 +120,35 @@ export default async function ServiceAreaDetailPage({
 
   await connectDB();
 
-  const [area, settingsDoc] =
-    await Promise.all([
-      getServiceAreaBySlug(slug),
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
-      SiteSettings.findOne({
-        active: true,
-      })
-        .lean()
-        .exec(),
-    ]);
+  const [
+    area,
+    settingsDoc,
+  ] = await Promise.all([
+    getServiceAreaBySlug(slug),
 
-  /*
-   * Invalid slug OR inactive area.
-   */
+    SiteSettings.findOne({
+      active: true,
+    })
+      .lean()
+      .exec(),
+  ]);
+
+  /* =======================================================
+     INVALID AREA
+  ======================================================= */
+
   if (!area) {
     notFound();
   }
 
-  /*
-   * Shared Navbar/Footer require
-   * website settings.
-   */
+  /* =======================================================
+     WEBSITE SETTINGS
+  ======================================================= */
+
   if (!settingsDoc) {
     return (
       <main className="min-h-screen bg-white">
@@ -129,8 +159,7 @@ export default async function ServiceAreaDetailPage({
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              Please configure the website
-              settings from the admin panel.
+              Please configure the website settings from the admin panel.
             </p>
           </div>
         </section>
@@ -138,12 +167,14 @@ export default async function ServiceAreaDetailPage({
     );
   }
 
-  /*
-   * Keep the same settings ViewModel shape
-   * used by the rest of the public website.
-   */
+  /* =======================================================
+     SETTINGS VIEW MODEL
+  ======================================================= */
+
   const settings = {
-    id: String(settingsDoc._id),
+    id: String(
+      settingsDoc._id,
+    ),
 
     businessName:
       settingsDoc.businessName,
@@ -153,10 +184,14 @@ export default async function ServiceAreaDetailPage({
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
@@ -204,15 +239,23 @@ export default async function ServiceAreaDetailPage({
       "Get a Free Quote",
 
     currency:
-      settingsDoc.currency || "INR",
+      settingsDoc.currency ||
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -224,100 +267,241 @@ export default async function ServiceAreaDetailPage({
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
     active:
       settingsDoc.active,
 
-    createdAt: new Date(
-      settingsDoc.createdAt,
-    ).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-    updatedAt: new Date(
-      settingsDoc.updatedAt,
-    ).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
 
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbItems = [
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Service Areas",
+      url: "/service-areas",
+    },
+
+    {
+      name: area.name,
+      url: `/service-areas/${area.slug}`,
+    },
+  ];
+
+  /* =======================================================
+     AREA SERVED
+  ======================================================= */
+
+  /*
+   * We use the actual current service-area page
+   * as the service location signal.
+   */
+  const areaName =
+    area.name;
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      /* ---------------------------------------------------
+         SERVICE
+      ---------------------------------------------------- */
+
+      createServiceSchema({
+        name:
+          `Pest Control in ${areaName}`,
+
+        description:
+          area.description ||
+          area.shortDescription,
+
+        url:
+          `/service-areas/${area.slug}`,
+
+        image:
+          area.image?.url,
+
+        serviceType:
+          "Pest Control",
+
+        areaServed: [
+          areaName,
+        ],
+
+        providerName:
+          settings.businessName,
+      }),
+
+      /* ---------------------------------------------------
+         BREADCRUMB
+      ---------------------------------------------------- */
+
+      createBreadcrumbSchema(
+        breadcrumbItems,
+      ),
+
+      /* ---------------------------------------------------
+         WEB PAGE
+      ---------------------------------------------------- */
+
+      createWebPageSchema({
+        name:
+          area.seoTitle ||
+          `Pest Control in ${area.name} | GR Pest Control`,
+
+        description:
+          area.seoDescription ||
+          area.shortDescription,
+
+        url:
+          `/service-areas/${area.slug}`,
+      }),
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar settings={settings} />
-
-      {/* =========================
-          BREADCRUMB
-      ========================== */}
-
-      <ServiceAreaBreadcrumb
-        areaName={area.name}
+      <JsonLd
+        data={jsonLd}
       />
 
-      {/* =========================
-          HERO
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <ServiceAreaDetailHero
-        name={area.name}
-        shortDescription={
-          area.shortDescription
-        }
-        description={
-          area.description
-        }
-        image={area.image}
-      />
+        <Navbar
+          settings={settings}
+        />
 
-      {/* =========================
-          LOCAL HIGHLIGHTS
-      ========================== */}
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
 
-      <ServiceAreaHighlights
-        areaName={area.name}
-        highlights={
-          area.highlights
-        }
-      />
+        <ServiceAreaBreadcrumb
+          areaName={
+            area.name
+          }
+        />
 
-      {/* =========================
-          NEARBY AREAS
-      ========================== */}
+        {/* =================================================
+            HERO
+        ================================================== */}
 
-      <ServiceAreaNearby
-        areaName={area.name}
-        nearbyAreas={
-          area.nearbyAreas
-        }
-      />
+        <ServiceAreaDetailHero
+          name={
+            area.name
+          }
 
-      {/* =========================
-          FAQ
-      ========================== */}
+          shortDescription={
+            area.shortDescription
+          }
 
-      <ServiceAreaFAQ
-        areaName={area.name}
-        faqs={area.faqs}
-      />
+          description={
+            area.description
+          }
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+          image={
+            area.image
+          }
+        />
 
-      <ServiceAreaFinalCTA
-        areaName={area.name}
-      />
+        {/* =================================================
+            LOCAL HIGHLIGHTS
+        ================================================== */}
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+        <ServiceAreaHighlights
+          areaName={
+            area.name
+          }
 
-      <Footer settings={settings} />
-    </main>
+          highlights={
+            area.highlights
+          }
+        />
+
+        {/* =================================================
+            NEARBY AREAS
+        ================================================== */}
+
+        <ServiceAreaNearby
+          areaName={
+            area.name
+          }
+
+          nearbyAreas={
+            area.nearbyAreas
+          }
+        />
+
+        {/* =================================================
+            FAQ
+        ================================================== */}
+
+        <ServiceAreaFAQ
+          areaName={
+            area.name
+          }
+
+          faqs={
+            area.faqs
+          }
+        />
+
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <ServiceAreaFinalCTA
+          areaName={
+            area.name
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            settings
+          }
+        />
+      </main>
+    </>
   );
 }

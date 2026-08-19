@@ -14,16 +14,36 @@ import SiteSettings from "@/models/SiteSettings";
 import Navbar from "@/components/shared/navigation/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions | GR Pest Control",
-  description:
-    "Read the Terms & Conditions that apply when using the GR Pest Control website and requesting our pest control services.",
-  alternates: {
-    canonical: "/terms",
-  },
-};
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Terms & Conditions | GR Pest Control",
+
+    description:
+      "Read the Terms & Conditions that apply when using the GR Pest Control website and requesting our pest control services.",
+
+    path: "/terms",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Terms & Conditions",
+  });
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -144,7 +164,41 @@ export default async function TermsPage() {
     new Date(settingsDoc.updatedAt),
   );
 
-  return (
+
+  const breadcrumbSchema =
+  createBreadcrumbSchema([
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Terms & Conditions",
+      url: "/terms",
+    },
+  ]);
+
+const webPageSchema =
+  createWebPageSchema({
+    name:
+      "Terms & Conditions | GR Pest Control",
+
+    description:
+      "Read the Terms & Conditions that apply when using the GR Pest Control website and requesting our pest control services.",
+
+    url: "/terms",
+  });
+
+const jsonLd =
+  createJsonLdGraph([
+    breadcrumbSchema,
+    webPageSchema,
+  ]);
+
+return (
+  <>
+    <JsonLd data={jsonLd} />
+
     <main className="min-h-screen bg-[#F8FAFC]">
       <Navbar settings={settings} />
 
@@ -1132,6 +1186,7 @@ export default async function TermsPage() {
 
       <Footer settings={settings} />
     </main>
+    </>
   );
 }
 

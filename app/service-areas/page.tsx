@@ -12,37 +12,77 @@ import ServiceAreasGrid from "@/components/service-areas/ServiceAreasGrid";
 import ServiceAreasHelpCTA from "@/components/service-areas/ServiceAreasHelpCTA";
 import ServiceAreasFinalCTA from "@/components/service-areas/ServiceAreasFinalCTA";
 
-import { getActiveServiceAreas } from "@/features/service-areas/queries/getActiveServiceAreas";
+import {
+  getActiveServiceAreas,
+} from "@/features/service-areas/queries/getActiveServiceAreas";
+
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Pest Control Service Areas",
-  description:
-    "Explore the areas served by GR Pest Control and find professional pest control services near you.",
-  alternates: {
-    canonical: "/service-areas",
-  },
-};
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Pest Control Service Areas Sydney | GR Pest Control",
+
+    description:
+      "Find GR Pest Control service areas across Sydney and surrounding suburbs. Explore local pest control coverage for homes, apartments, businesses and commercial properties.",
+
+    path: "/service-areas",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Pest Control Service Areas across Sydney",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function ServiceAreasPage() {
   await connectDB();
 
-  const [areas, settingsDoc] =
-    await Promise.all([
-      getActiveServiceAreas(),
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
-      SiteSettings.findOne({
-        active: true,
-      })
-        .lean()
-        .exec(),
-    ]);
+  const [
+    areas,
+    settingsDoc,
+  ] = await Promise.all([
+    getActiveServiceAreas(),
 
-  /*
-   * Website settings are required by
-   * the shared Navbar and Footer.
-   */
+    SiteSettings.findOne({
+      active: true,
+    })
+      .lean()
+      .exec(),
+  ]);
+
+  /* =======================================================
+     SETTINGS FALLBACK
+  ======================================================= */
+
   if (!settingsDoc) {
     return (
       <main className="min-h-screen bg-white">
@@ -53,8 +93,7 @@ export default async function ServiceAreasPage() {
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              Please configure the website
-              settings from the admin panel.
+              Please configure the website settings from the admin panel.
             </p>
           </div>
         </section>
@@ -62,25 +101,30 @@ export default async function ServiceAreasPage() {
     );
   }
 
-  /*
-   * Separate featured areas from the
-   * normal service-area grid so the
-   * same area is never displayed twice.
-   */
-  const featuredAreas = areas.filter(
-    (area) => area.featured,
-  );
+  /* =======================================================
+     FEATURED / REGULAR
+  ======================================================= */
 
-  const regularAreas = areas.filter(
-    (area) => !area.featured,
-  );
+  const featuredAreas =
+    areas.filter(
+      (area) =>
+        area.featured,
+    );
 
-  /*
-   * Keep the same settings ViewModel
-   * shape used across the public website.
-   */
+  const regularAreas =
+    areas.filter(
+      (area) =>
+        !area.featured,
+    );
+
+  /* =======================================================
+     SETTINGS VIEW MODEL
+  ======================================================= */
+
   const settings = {
-    id: String(settingsDoc._id),
+    id: String(
+      settingsDoc._id,
+    ),
 
     businessName:
       settingsDoc.businessName,
@@ -90,10 +134,14 @@ export default async function ServiceAreasPage() {
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
@@ -141,15 +189,23 @@ export default async function ServiceAreasPage() {
       "Get a Free Quote",
 
     currency:
-      settingsDoc.currency || "INR",
+      settingsDoc.currency ||
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -161,78 +217,156 @@ export default async function ServiceAreasPage() {
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
     active:
       settingsDoc.active,
 
-    createdAt: new Date(
-      settingsDoc.createdAt,
-    ).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-    updatedAt: new Date(
-      settingsDoc.updatedAt,
-    ).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
 
+  /* =======================================================
+     BREADCRUMB
+  ======================================================= */
+
+  const breadcrumbItems = [
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Service Areas",
+      url: "/service-areas",
+    },
+  ];
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      /* ---------------------------------------------------
+         BREADCRUMB
+      ---------------------------------------------------- */
+
+      createBreadcrumbSchema(
+        breadcrumbItems,
+      ),
+
+      /* ---------------------------------------------------
+         WEB PAGE
+      ---------------------------------------------------- */
+
+      createWebPageSchema({
+        name:
+          "Pest Control Service Areas Sydney | GR Pest Control",
+
+        description:
+          "Find GR Pest Control service areas across Sydney and surrounding suburbs. Explore local pest control coverage for homes, apartments, businesses and commercial properties.",
+
+        url:
+          "/service-areas",
+      }),
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <><Navbar settings={settings} />
-    <main className="min-h-screen bg-[#F8FAFC] mt-16">
-      {/* =========================
-          NAVIGATION
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      
-
-      {/* =========================
-          HERO
-      ========================== */}
-
-      <ServiceAreasHero
-        areaCount={areas.length}
+      <JsonLd
+        data={
+          jsonLd
+        }
       />
 
-      {/* =========================
-          FEATURED AREAS
-      ========================== */}
-
-      <FeaturedServiceAreas
-        areas={featuredAreas}
+      <Navbar
+        settings={
+          settings
+        }
       />
 
-      {/* =========================
-          ALL AREAS
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC] mt-16">
+        {/* =================================================
+            HERO
+        ================================================== */}
 
-      <ServiceAreasGrid
-        areas={regularAreas}
-      />
+        <ServiceAreasHero
+          areaCount={
+            areas.length
+          }
+        />
 
-      {/* =========================
-          COVERAGE HELP
-      ========================== */}
+        {/* =================================================
+            FEATURED AREAS
+        ================================================== */}
 
-      <ServiceAreasHelpCTA />
+        <FeaturedServiceAreas
+          areas={
+            featuredAreas
+          }
+        />
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+        {/* =================================================
+            ALL AREAS
+        ================================================== */}
 
-      <ServiceAreasFinalCTA
-        areaCount={areas.length}
-      />
+        <ServiceAreasGrid
+          areas={
+            regularAreas
+          }
+        />
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+        {/* =================================================
+            COVERAGE HELP
+        ================================================== */}
 
-      <Footer settings={settings} />
-    </main>
+        <ServiceAreasHelpCTA />
+
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <ServiceAreasFinalCTA
+          areaCount={
+            areas.length
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            settings
+          }
+        />
+      </main>
     </>
   );
 }

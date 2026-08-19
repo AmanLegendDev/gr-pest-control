@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { connectDB } from "@/lib/db/connect";
-
 import SiteSettings from "@/models/SiteSettings";
 
 import Navbar from "@/components/shared/navigation/Navbar";
@@ -22,13 +21,38 @@ import {
   getActiveGalleryItems,
 } from "@/features/gallery/queries/getActiveGalleryItems";
 
+import {
+  createGalleryMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createImageObjectSchema,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
 interface GalleryDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
 
+/* =========================================================
+   RENDERING
+========================================================= */
+
 export const dynamic = "force-dynamic";
+
+/* =========================================================
+   METADATA
+========================================================= */
 
 export async function generateMetadata({
   params,
@@ -40,64 +64,56 @@ export async function generateMetadata({
   const item =
     await getGalleryItemBySlug(slug);
 
+  /*
+   * Invalid / inactive gallery item.
+   */
   if (!item) {
     return {
-      title:
-        "Gallery Item Not Found | GR Pest Control",
+      title: "Gallery Item Not Found",
 
       description:
-        "The requested gallery item could not be found.",
+        "The requested GR Pest Control gallery item could not be found.",
+
+      robots: {
+        index: false,
+        follow: false,
+
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      },
     };
   }
 
-  const title =
-    item.seoTitle ||
-    `${item.title} | GR Pest Control`;
+  return createGalleryMetadata({
+    title:
+      item.title,
 
-  const description =
-    item.seoDescription ||
-    item.description;
+    seoTitle:
+      item.seoTitle,
 
-  return {
-    title,
+    description:
+      item.description,
 
-    description,
+    seoDescription:
+      item.seoDescription,
 
-    alternates: {
-      canonical: `/gallery/${item.slug}`,
-    },
+    slug:
+      item.slug,
 
-    openGraph: {
-      title,
+    image:
+      item.image.url,
 
-      description,
-
-      type: "website",
-
-      images: [
-        {
-          url: item.image.url,
-
-          alt:
-            item.image.alt ||
-            item.title,
-        },
-      ],
-    },
-
-    twitter: {
-      card: "summary_large_image",
-
-      title,
-
-      description,
-
-      images: [
-        item.image.url,
-      ],
-    },
-  };
+    imageAlt:
+      item.image.alt ||
+      item.title,
+  });
 }
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function GalleryDetailPage({
   params,
@@ -122,9 +138,17 @@ export default async function GalleryDetailPage({
       .exec(),
   ]);
 
+  /* =======================================================
+     INVALID ITEM
+  ======================================================= */
+
   if (!item) {
     notFound();
   }
+
+  /* =======================================================
+     SITE SETTINGS
+  ======================================================= */
 
   if (!settingsDoc) {
     throw new Error(
@@ -132,12 +156,14 @@ export default async function GalleryDetailPage({
     );
   }
 
-  /* =========================
-     SETTINGS
-  ========================== */
+  /* =======================================================
+     SETTINGS VIEW MODEL
+  ======================================================= */
 
   const settings = {
-    id: String(settingsDoc._id),
+    id: String(
+      settingsDoc._id,
+    ),
 
     businessName:
       settingsDoc.businessName,
@@ -147,10 +173,14 @@ export default async function GalleryDetailPage({
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
@@ -177,20 +207,20 @@ export default async function GalleryDetailPage({
 
     socialLinks: {
       facebook:
-        settingsDoc.socialLinks?.facebook ??
-        "",
+        settingsDoc.socialLinks
+          ?.facebook ?? "",
 
       instagram:
-        settingsDoc.socialLinks?.instagram ??
-        "",
+        settingsDoc.socialLinks
+          ?.instagram ?? "",
 
       youtube:
-        settingsDoc.socialLinks?.youtube ??
-        "",
+        settingsDoc.socialLinks
+          ?.youtube ?? "",
 
       googleBusiness:
-        settingsDoc.socialLinks?.googleBusiness ??
-        "",
+        settingsDoc.socialLinks
+          ?.googleBusiness ?? "",
     },
 
     primaryCTA:
@@ -199,15 +229,22 @@ export default async function GalleryDetailPage({
 
     currency:
       settingsDoc.currency ||
-      "INR",
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -219,28 +256,34 @@ export default async function GalleryDetailPage({
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
     active:
       settingsDoc.active,
 
-    createdAt: new Date(
-      settingsDoc.createdAt,
-    ).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-    updatedAt: new Date(
-      settingsDoc.updatedAt,
-    ).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
 
-  /* =========================
+  /* =======================================================
      RELATED GALLERY
-  ========================== */
+  ======================================================= */
 
   const sameCategory =
     allItems.filter(
@@ -263,64 +306,181 @@ export default async function GalleryDetailPage({
       ? sameCategory.slice(0, 3)
       : fallbackRelated.slice(0, 3);
 
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbItems = [
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Gallery",
+      url: "/gallery",
+    },
+
+    {
+      name: item.title,
+      url:
+        `/gallery/${item.slug}`,
+    },
+  ];
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      /* ---------------------------------------------------
+         IMAGE
+      ---------------------------------------------------- */
+
+      createImageObjectSchema({
+        url:
+          item.image.url,
+
+        name:
+          item.title,
+
+        description:
+          item.image.alt ||
+          item.description,
+      }),
+
+      /* ---------------------------------------------------
+         BREADCRUMB
+      ---------------------------------------------------- */
+
+      createBreadcrumbSchema(
+        breadcrumbItems,
+      ),
+
+      /* ---------------------------------------------------
+         WEB PAGE
+      ---------------------------------------------------- */
+
+      createWebPageSchema({
+        name:
+          item.seoTitle ||
+          item.title,
+
+        description:
+          item.seoDescription ||
+          item.description,
+
+        url:
+          `/gallery/${item.slug}`,
+      }),
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar settings={settings} />
-
-      {/* =========================
-          BREADCRUMB
-          BELOW NAVBAR
-      ========================== */}
-
-      <GalleryBreadcrumb
-        title={item.title}
-        category={item.category}
+      <JsonLd
+        data={jsonLd}
       />
 
-      {/* =========================
-          DETAIL HERO
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <GalleryDetailHero
-        title={item.title}
-        description={item.description}
-        category={item.category}
-        image={item.image}
-      />
+        <Navbar
+          settings={
+            settings
+          }
+        />
 
-      {/* =========================
-          DETAIL CONTENT
-      ========================== */}
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
 
-      <GalleryDetailContent
-        title={item.title}
-        description={item.description}
-        category={item.category}
-      />
+        <GalleryBreadcrumb
+          title={
+            item.title
+          }
 
-      {/* =========================
-          RELATED
-      ========================== */}
+          category={
+            item.category
+          }
+        />
 
-      <RelatedGallery
-        items={relatedItems}
-      />
+        {/* =================================================
+            DETAIL HERO
+        ================================================== */}
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+        <GalleryDetailHero
+          title={
+            item.title
+          }
 
-      <GalleryFinalCTA />
+          description={
+            item.description
+          }
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+          category={
+            item.category
+          }
 
-      <Footer settings={settings} />
-    </main>
+          image={
+            item.image
+          }
+        />
+
+        {/* =================================================
+            DETAIL CONTENT
+        ================================================== */}
+
+        <GalleryDetailContent
+          title={
+            item.title
+          }
+
+          description={
+            item.description
+          }
+
+          category={
+            item.category
+          }
+        />
+
+        {/* =================================================
+            RELATED
+        ================================================== */}
+
+        <RelatedGallery
+          items={
+            relatedItems
+          }
+        />
+
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <GalleryFinalCTA />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            settings
+          }
+        />
+      </main>
+    </>
   );
 }

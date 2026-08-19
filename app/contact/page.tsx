@@ -14,30 +14,49 @@ import ContactCTA from "@/components/contact/ContactCTA";
 
 import { getSiteSettings } from "@/features/about/queries/getSiteSettings";
 
-export const metadata: Metadata = {
-  title:
-    "Contact Us | GR Pest Control",
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
 
-  description:
-    "Get in touch with GR Pest Control for professional pest control services, enquiries, directions and service information.",
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createLocalBusinessSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
 
-  alternates: {
-    canonical: "/contact",
-  },
+import JsonLd from "@/components/seo/JsonLd";
 
-  openGraph: {
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
+
+export const dynamic = "force-dynamic";
+
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
     title:
-      "Contact Us | GR Pest Control",
+      "Contact GR Pest Control Sydney | Get in Touch",
 
     description:
-      "Contact GR Pest Control by phone, WhatsApp or email, find our location and check business hours.",
+      "Contact GR Pest Control for professional pest management services across Sydney. Call, email or WhatsApp our team, check our location and business hours.",
 
-    type: "website",
-  },
-};
+    path: "/contact",
 
-export const dynamic =
-  "force-dynamic";
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Contact and Pest Control Services in Sydney",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function ContactPage() {
   await connectDB();
@@ -51,14 +70,13 @@ export default async function ContactPage() {
     );
   }
 
-  /*
-   * =========================
-   * NAVBAR / FOOTER SETTINGS
-   * =========================
-   */
+  /* =======================================================
+     NAVBAR / FOOTER SETTINGS
+  ======================================================= */
 
   const navbarFooterSettings = {
-    id: settings.id,
+    id:
+      settings.id,
 
     businessName:
       settings.businessName,
@@ -66,7 +84,8 @@ export default async function ContactPage() {
     shortDescription:
       settings.shortDescription,
 
-    logo: settings.logo,
+    logo:
+      settings.logo,
 
     email:
       settings.email,
@@ -120,101 +139,262 @@ export default async function ContactPage() {
       settings.updatedAt,
   };
 
-  /*
-   * =========================
-   * CONTACT PAGE
-   * =========================
-   */
+  /* =======================================================
+     SOCIAL LINKS
+  ======================================================= */
+
+  const sameAs = [
+    settings.socialLinks?.facebook,
+    settings.socialLinks?.instagram,
+    settings.socialLinks?.youtube,
+    settings.socialLinks?.googleBusiness,
+  ].filter(
+    (value): value is string =>
+      Boolean(value?.trim()),
+  );
+
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbSchema =
+    createBreadcrumbSchema([
+      {
+        name:
+          "Home",
+
+        url:
+          "/",
+      },
+
+      {
+        name:
+          "Contact",
+
+        url:
+          "/contact",
+      },
+    ]);
+
+  /* =======================================================
+     LOCAL BUSINESS
+  ======================================================= */
+
+  const localBusinessSchema =
+    createLocalBusinessSchema({
+      name:
+        settings.businessName,
+
+      url:
+        "/contact",
+
+      logo:
+        settings.logo?.url,
+
+      email:
+        settings.email,
+
+      phone:
+        settings.phone,
+
+      description:
+        settings.shortDescription,
+
+      sameAs,
+
+      areaServed: [
+        settings.city,
+      ].filter(Boolean),
+
+      openingHours:
+        settings.businessHours,
+
+      address: {
+        streetAddress:
+          settings.address,
+
+        addressLocality:
+          settings.city,
+
+        addressRegion:
+          settings.state,
+
+        postalCode:
+          settings.pincode,
+
+        addressCountry:
+          "AU",
+      },
+    });
+
+  /* =======================================================
+     WEB PAGE
+  ======================================================= */
+
+  const webPageSchema =
+    createWebPageSchema({
+      name:
+        "Contact GR Pest Control Sydney | Get in Touch",
+
+      description:
+        "Contact GR Pest Control for professional pest management services across Sydney. Call, email or WhatsApp our team, check our location and business hours.",
+
+      url:
+        "/contact",
+    });
+
+  /* =======================================================
+     JSON-LD GRAPH
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      breadcrumbSchema,
+      localBusinessSchema,
+      webPageSchema,
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar
-        settings={
-          navbarFooterSettings
+      <JsonLd
+        data={
+          jsonLd
         }
       />
 
-      {/* =========================
-          BREADCRUMB
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <ContactBreadcrumb />
+        <Navbar
+          settings={
+            navbarFooterSettings
+          }
+        />
 
-      {/* =========================
-          HERO
-      ========================== */}
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
 
-      <ContactHero
-        businessName={
-          settings.businessName
-        }
-        city={settings.city}
-        phone={settings.phone}
-        email={settings.email}
-      />
+        <ContactBreadcrumb />
 
-      {/* =========================
-          CONTACT METHODS
-      ========================== */}
+        {/* =================================================
+            HERO
+        ================================================== */}
 
-      <ContactMethods
-        phone={settings.phone}
-        email={settings.email}
-        whatsapp={settings.whatsapp}
-      />
+        <ContactHero
+          businessName={
+            settings.businessName
+          }
 
-      {/* =========================
-          LOCATION
-      ========================== */}
+          city={
+            settings.city
+          }
 
-      <ContactLocation
-        businessName={
-          settings.businessName
-        }
-        address={settings.address}
-        city={settings.city}
-        state={settings.state}
-        pincode={settings.pincode}
-      />
+          phone={
+            settings.phone
+          }
 
-      {/* =========================
-          BUSINESS HOURS
-      ========================== */}
+          email={
+            settings.email
+          }
+        />
 
-      <ContactHours
-        businessHours={
-          settings.businessHours
-        }
-      />
+        {/* =================================================
+            CONTACT METHODS
+        ================================================== */}
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+        <ContactMethods
+          phone={
+            settings.phone
+          }
 
-      <ContactCTA
-        businessName={
-          settings.businessName
-        }
-        primaryCTA={
-          settings.primaryCTA
-        }
-        phone={settings.phone}
-        whatsapp={settings.whatsapp}
-      />
+          email={
+            settings.email
+          }
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+          whatsapp={
+            settings.whatsapp
+          }
+        />
 
-      <Footer
-        settings={
-          navbarFooterSettings
-        }
-      />
-    </main>
+        {/* =================================================
+            LOCATION
+        ================================================== */}
+
+        <ContactLocation
+          businessName={
+            settings.businessName
+          }
+
+          address={
+            settings.address
+          }
+
+          city={
+            settings.city
+          }
+
+          state={
+            settings.state
+          }
+
+          pincode={
+            settings.pincode
+          }
+        />
+
+        {/* =================================================
+            BUSINESS HOURS
+        ================================================== */}
+
+        <ContactHours
+          businessHours={
+            settings.businessHours
+          }
+        />
+
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <ContactCTA
+          businessName={
+            settings.businessName
+          }
+
+          primaryCTA={
+            settings.primaryCTA
+          }
+
+          phone={
+            settings.phone
+          }
+
+          whatsapp={
+            settings.whatsapp
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            navbarFooterSettings
+          }
+        />
+      </main>
+    </>
   );
 }

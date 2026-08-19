@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { connectDB } from "@/lib/db/connect";
 import SiteSettings from "@/models/SiteSettings";
 
@@ -5,13 +7,40 @@ import Navbar from "@/components/shared/navigation/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import QuoteReviewClient from "@/components/quote/QuoteReviewClient";
 
-export const dynamic = "force-dynamic";
+export const dynamic =
+  "force-dynamic";
 
-export const metadata = {
-  title: "Review Your Quote Request",
+/* =========================================================
+   METADATA
+
+   Review is a temporary user-flow page.
+   It should not appear in search results.
+========================================================= */
+
+export const metadata: Metadata = {
+  title: "Review Your Quote Request | GR Pest Control",
+
   description:
     "Review your GR Pest Control quote request before submitting.",
+
+  robots: {
+    index: false,
+    follow: true,
+
+    googleBot: {
+      index: false,
+      follow: true,
+    },
+  },
+
+  alternates: {
+    canonical: "/quote/review",
+  },
 };
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function QuoteReviewPage() {
   await connectDB();
@@ -33,8 +62,7 @@ export default async function QuoteReviewPage() {
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              Please configure the website
-              settings from the admin panel.
+              Please configure the website settings from the admin panel.
             </p>
           </div>
         </section>
@@ -42,27 +70,39 @@ export default async function QuoteReviewPage() {
     );
   }
 
- const settings = {
-  id: String(settingsDoc._id),
+  /* =======================================================
+     SETTINGS
+  ======================================================= */
 
-  businessName:
-    settingsDoc.businessName,
+  const settings = {
+    id: String(
+      settingsDoc._id,
+    ),
+
+    businessName:
+      settingsDoc.businessName,
 
     shortDescription:
       settingsDoc.shortDescription,
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
-    email: settingsDoc.email,
+    email:
+      settingsDoc.email,
 
-    phone: settingsDoc.phone,
+    phone:
+      settingsDoc.phone,
 
     whatsapp:
       settingsDoc.whatsapp,
@@ -93,8 +133,8 @@ export default async function QuoteReviewPage() {
         "",
 
       googleBusiness:
-        settingsDoc.socialLinks
-          ?.googleBusiness ?? "",
+        settingsDoc.socialLinks?.googleBusiness ??
+        "",
     },
 
     primaryCTA:
@@ -102,15 +142,23 @@ export default async function QuoteReviewPage() {
       "Get a Free Quote",
 
     currency:
-      settingsDoc.currency || "INR",
+      settingsDoc.currency ||
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -122,32 +170,50 @@ export default async function QuoteReviewPage() {
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
     active:
       settingsDoc.active,
 
-      createdAt: new Date(
-  settingsDoc.createdAt,
-).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-updatedAt: new Date(
-  settingsDoc.updatedAt,
-).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
-      <Navbar settings={settings} />
+      <Navbar
+        settings={
+          settings
+        }
+      />
 
       <QuoteReviewClient />
 
-      <Footer settings={settings} />
+      <Footer
+        settings={
+          settings
+        }
+      />
     </main>
   );
 }

@@ -14,36 +14,64 @@ import TestimonialCTA from "@/components/testimonials/TestimonialCTA";
 
 import { getSiteSettings } from "@/features/about/queries/getSiteSettings";
 
-import { getActiveTestimonials } from "@/features/testimonials/queries/getActiveTestimonials";
-import { getFeaturedTestimonials } from "@/features/testimonials/queries/getFeaturedTestimonials";
+import {
+  getActiveTestimonials,
+} from "@/features/testimonials/queries/getActiveTestimonials";
 
-export const metadata: Metadata = {
-  title:
-    "Customer Reviews & Testimonials | GR Pest Control",
+import {
+  getFeaturedTestimonials,
+} from "@/features/testimonials/queries/getFeaturedTestimonials";
 
-  description:
-    "Read genuine customer reviews and testimonials about GR Pest Control services, professional treatments and pest control solutions.",
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
 
-  alternates: {
-    canonical: "/testimonials",
-  },
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
 
-  openGraph: {
-    title:
-      "Customer Reviews & Testimonials | GR Pest Control",
+import JsonLd from "@/components/seo/JsonLd";
 
-    description:
-      "See what customers say about their experience with GR Pest Control.",
-
-    type: "website",
-  },
-};
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
 
 export const dynamic =
   "force-dynamic";
 
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Customer Reviews & Testimonials | GR Pest Control",
+
+    description:
+      "Read customer experiences with GR Pest Control and learn about our professional pest management services for homes and businesses across Sydney.",
+
+    path: "/testimonials",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Customer Reviews and Testimonials",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
+
 export default async function TestimonialsPage() {
   await connectDB();
+
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
   const [
     settings,
@@ -51,7 +79,9 @@ export default async function TestimonialsPage() {
     featuredTestimonials,
   ] = await Promise.all([
     getSiteSettings(),
+
     getActiveTestimonials(),
+
     getFeaturedTestimonials(),
   ]);
 
@@ -61,11 +91,9 @@ export default async function TestimonialsPage() {
     );
   }
 
-  /*
-   * =========================
-   * RATING STATISTICS
-   * =========================
-   */
+  /* =======================================================
+     RATING STATISTICS
+  ======================================================= */
 
   const testimonialCount =
     testimonials.length;
@@ -73,7 +101,8 @@ export default async function TestimonialsPage() {
   const totalRating =
     testimonials.reduce(
       (total, testimonial) =>
-        total + testimonial.rating,
+        total +
+        testimonial.rating,
       0,
     );
 
@@ -86,17 +115,17 @@ export default async function TestimonialsPage() {
   const fiveStarCount =
     testimonials.filter(
       (testimonial) =>
-        testimonial.rating === 5,
+        testimonial.rating ===
+        5,
     ).length;
 
-  /*
-   * =========================
-   * NAVBAR / FOOTER SETTINGS
-   * =========================
-   */
+  /* =======================================================
+     NAVBAR / FOOTER SETTINGS
+  ======================================================= */
 
   const navbarFooterSettings = {
-    id: settings.id,
+    id:
+      settings.id,
 
     businessName:
       settings.businessName,
@@ -104,7 +133,8 @@ export default async function TestimonialsPage() {
     shortDescription:
       settings.shortDescription,
 
-    logo: settings.logo,
+    logo:
+      settings.logo,
 
     email:
       settings.email,
@@ -158,16 +188,15 @@ export default async function TestimonialsPage() {
       settings.updatedAt,
   };
 
-  /*
-   * =========================
-   * TESTIMONIAL DATA
-   * =========================
-   */
+  /* =======================================================
+     TESTIMONIAL DATA
+  ======================================================= */
 
   const testimonialItems =
     testimonials.map(
       (testimonial) => ({
-        id: testimonial.id,
+        id:
+          testimonial.id,
 
         name:
           testimonial.name,
@@ -198,7 +227,8 @@ export default async function TestimonialsPage() {
   const featuredItems =
     featuredTestimonials.map(
       (testimonial) => ({
-        id: testimonial.id,
+        id:
+          testimonial.id,
 
         name:
           testimonial.name,
@@ -226,199 +256,180 @@ export default async function TestimonialsPage() {
       }),
     );
 
-  /*
-   * =========================
-   * TESTIMONIAL JSON-LD
-   * =========================
-   *
-   * Only publish aggregate rating
-   * when actual testimonials exist.
-   */
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
 
-  const testimonialSchema =
-    testimonialCount > 0
-      ? {
-          "@context":
-            "https://schema.org",
+  const breadcrumbSchema =
+    createBreadcrumbSchema([
+      {
+        name:
+          "Home",
 
-          "@type":
-            "LocalBusiness",
+        url:
+          "/",
+      },
 
-          name:
-            settings.businessName,
+      {
+        name:
+          "Testimonials",
 
-          aggregateRating: {
-            "@type":
-              "AggregateRating",
+        url:
+          "/testimonials",
+      },
+    ]);
 
-            ratingValue:
-              Number(
-                averageRating.toFixed(
-                  1,
-                ),
-              ),
+  /* =======================================================
+     WEB PAGE
+  ======================================================= */
 
-            bestRating: 5,
+  const webPageSchema =
+    createWebPageSchema({
+      name:
+        "Customer Reviews & Testimonials | GR Pest Control",
 
-            worstRating: 1,
+      description:
+        "Read customer experiences with GR Pest Control and learn about our professional pest management services for homes and businesses across Sydney.",
 
-            ratingCount:
-              testimonialCount,
-          },
+      url:
+        "/testimonials",
+    });
 
-          review:
-            testimonials
-              .slice(0, 10)
-              .map(
-                (testimonial) => ({
-                  "@type":
-                    "Review",
+  /* =======================================================
+     JSON-LD GRAPH
+  ======================================================= */
 
-                  author: {
-                    "@type":
-                      "Person",
+  const jsonLd =
+    createJsonLdGraph([
+      breadcrumbSchema,
+      webPageSchema,
+    ]);
 
-                    name:
-                      testimonial.name,
-                  },
-
-                  reviewBody:
-                    testimonial.content,
-
-                  reviewRating: {
-                    "@type":
-                      "Rating",
-
-                    ratingValue:
-                      testimonial.rating,
-
-                    bestRating: 5,
-
-                    worstRating: 1,
-                  },
-                }),
-              ),
-        }
-      : null;
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar
-        settings={
-          navbarFooterSettings
+      <JsonLd
+        data={
+          jsonLd
         }
       />
 
-      {/* =========================
-          BREADCRUMB
-          ALWAYS BELOW NAVBAR
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <TestimonialBreadcrumb />
-
-      {/* =========================
-          HERO
-      ========================== */}
-
-      <TestimonialHero
-        businessName={
-          settings.businessName
-        }
-        testimonialCount={
-          testimonialCount
-        }
-        featuredCount={
-          featuredTestimonials.length
-        }
-        averageRating={
-          averageRating
-        }
-      />
-
-      {/* =========================
-          TRUST STATISTICS
-      ========================== */}
-
-      <TestimonialStats
-        testimonialCount={
-          testimonialCount
-        }
-        averageRating={
-          averageRating
-        }
-        fiveStarCount={
-          fiveStarCount
-        }
-      />
-
-      {/* =========================
-          FEATURED REVIEWS
-      ========================== */}
-
-      <TestimonialFeatured
-        items={
-          featuredItems
-        }
-      />
-
-      {/* =========================
-          ALL CUSTOMER STORIES
-      ========================== */}
-
-      <TestimonialGrid
-        items={
-          testimonialItems
-        }
-      />
-
-      {/* =========================
-          CTA
-      ========================== */}
-
-      <TestimonialCTA
-        businessName={
-          settings.businessName
-        }
-        primaryCTA={
-          settings.primaryCTA
-        }
-        phone={
-          settings.phone
-        }
-        whatsapp={
-          settings.whatsapp
-        }
-      />
-
-      {/* =========================
-          FOOTER
-      ========================== */}
-
-      <Footer
-        settings={
-          navbarFooterSettings
-        }
-      />
-
-      {/* =========================
-          REVIEW JSON-LD
-      ========================== */}
-
-      {testimonialSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html:
-              JSON.stringify(
-                testimonialSchema,
-              ),
-          }}
+        <Navbar
+          settings={
+            navbarFooterSettings
+          }
         />
-      )}
-    </main>
+
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
+
+        <TestimonialBreadcrumb />
+
+        {/* =================================================
+            HERO
+        ================================================== */}
+
+        <TestimonialHero
+          businessName={
+            settings.businessName
+          }
+
+          testimonialCount={
+            testimonialCount
+          }
+
+          featuredCount={
+            featuredTestimonials.length
+          }
+
+          averageRating={
+            averageRating
+          }
+        />
+
+        {/* =================================================
+            TRUST STATISTICS
+        ================================================== */}
+
+        <TestimonialStats
+          testimonialCount={
+            testimonialCount
+          }
+
+          averageRating={
+            averageRating
+          }
+
+          fiveStarCount={
+            fiveStarCount
+          }
+        />
+
+        {/* =================================================
+            FEATURED REVIEWS
+        ================================================== */}
+
+        <TestimonialFeatured
+          items={
+            featuredItems
+          }
+        />
+
+        {/* =================================================
+            ALL CUSTOMER STORIES
+        ================================================== */}
+
+        <TestimonialGrid
+          items={
+            testimonialItems
+          }
+        />
+
+        {/* =================================================
+            CTA
+        ================================================== */}
+
+        <TestimonialCTA
+          businessName={
+            settings.businessName
+          }
+
+          primaryCTA={
+            settings.primaryCTA
+          }
+
+          phone={
+            settings.phone
+          }
+
+          whatsapp={
+            settings.whatsapp
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            navbarFooterSettings
+          }
+        />
+      </main>
+    </>
   );
 }

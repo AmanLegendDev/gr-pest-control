@@ -14,39 +14,64 @@ import AboutValues from "@/components/about/AboutValues";
 import AboutAreas from "@/components/about/AboutAreas";
 import AboutCTA from "@/components/about/AboutCTA";
 
-import { getSiteSettings } from "@/features/about/queries/getSiteSettings";
+import {
+  getSiteSettings,
+} from "@/features/about/queries/getSiteSettings";
 
 import {
   getActiveServiceAreas,
 } from "@/features/service-areas/queries/getActiveServiceAreas";
 
-export const metadata: Metadata = {
-  title:
-    "About Us | GR Pest Control",
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
 
-  description:
-    "Learn more about GR Pest Control, our professional approach to pest control, the properties we serve and what guides our service.",
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
 
-  alternates: {
-    canonical: "/about",
-  },
+import JsonLd from "@/components/seo/JsonLd";
 
-  openGraph: {
-    title:
-      "About Us | GR Pest Control",
-
-    description:
-      "Learn more about GR Pest Control and our professional approach to pest control.",
-
-    type: "website",
-  },
-};
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
 
 export const dynamic =
   "force-dynamic";
 
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "About GR Pest Control | Professional Pest Control Sydney",
+
+    description:
+      "Learn more about GR Pest Control, our professional approach to pest management, the properties we serve and the Sydney areas covered by our team.",
+
+    path: "/about",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Professional Pest Control Services in Sydney",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
+
 export default async function AboutPage() {
   await connectDB();
+
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
   const [
     settings,
@@ -63,14 +88,13 @@ export default async function AboutPage() {
     );
   }
 
-  /*
-   * =========================
-   * SERIALIZABLE SETTINGS
-   * =========================
-   */
+  /* =======================================================
+     SERIALIZABLE SETTINGS
+  ======================================================= */
 
   const navbarFooterSettings = {
-    id: settings.id,
+    id:
+      settings.id,
 
     businessName:
       settings.businessName,
@@ -78,11 +102,14 @@ export default async function AboutPage() {
     shortDescription:
       settings.shortDescription,
 
-    logo: settings.logo,
+    logo:
+      settings.logo,
 
-    email: settings.email,
+    email:
+      settings.email,
 
-    phone: settings.phone,
+    phone:
+      settings.phone,
 
     whatsapp:
       settings.whatsapp,
@@ -130,143 +157,238 @@ export default async function AboutPage() {
       settings.updatedAt,
   };
 
-  /*
-   * =========================
-   * ABOUT AREA DATA
-   * =========================
-   */
+  /* =======================================================
+     ABOUT AREA DATA
+  ======================================================= */
 
   const areas =
     serviceAreas.map(
       (area) => ({
-        id: String(area.id),
+        id:
+          String(area.id),
 
-        name: area.name,
+        name:
+          area.name,
 
-        slug: area.slug,
+        slug:
+          area.slug,
 
         shortDescription:
           area.shortDescription,
 
         nearbyAreas:
-          area.nearbyAreas ?? [],
+          area.nearbyAreas ??
+          [],
 
         featured:
-          Boolean(area.featured),
+          Boolean(
+            area.featured,
+          ),
       }),
     );
 
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbSchema =
+    createBreadcrumbSchema([
+      {
+        name:
+          "Home",
+
+        url:
+          "/",
+      },
+
+      {
+        name:
+          "About Us",
+
+        url:
+          "/about",
+      },
+    ]);
+
+  /* =======================================================
+     WEB PAGE
+  ======================================================= */
+
+  const webPageSchema =
+    createWebPageSchema({
+      name:
+        "About GR Pest Control | Professional Pest Control Sydney",
+
+      description:
+        "Learn more about GR Pest Control, our professional approach to pest management, the properties we serve and the Sydney areas covered by our team.",
+
+      url:
+        "/about",
+    });
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      breadcrumbSchema,
+      webPageSchema,
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar
-        settings={
-          navbarFooterSettings
+      <JsonLd
+        data={
+          jsonLd
         }
       />
 
-      {/* =========================
-          BREADCRUMB
-          ALWAYS BELOW NAVBAR
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <AboutBreadcrumb
-        businessName={
-          settings.businessName
-        }
-      />
+        <Navbar
+          settings={
+            navbarFooterSettings
+          }
+        />
 
-      {/* =========================
-          HERO
-      ========================== */}
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
 
-      <AboutHero
-        businessName={
-          settings.businessName
-        }
-        shortDescription={
-          settings.shortDescription
-        }
-        city={settings.city}
-        state={settings.state}
-        primaryCTA={
-          settings.primaryCTA
-        }
-      />
+        <AboutBreadcrumb
+          businessName={
+            settings.businessName
+          }
+        />
 
-      {/* =========================
-          STORY
-      ========================== */}
+        {/* =================================================
+            HERO
+        ================================================== */}
 
-      <AboutStory
-        businessName={
-          settings.businessName
-        }
-        shortDescription={
-          settings.shortDescription
-        }
-        city={settings.city}
-        state={settings.state}
-      />
+        <AboutHero
+          businessName={
+            settings.businessName
+          }
 
-      {/* =========================
-          TRUST
-      ========================== */}
+          shortDescription={
+            settings.shortDescription
+          }
 
-      <AboutTrust
-        businessName={
-          settings.businessName
-        }
-      />
+          city={
+            settings.city
+          }
 
-      {/* =========================
-          APPROACH
-      ========================== */}
+          state={
+            settings.state
+          }
 
-      <AboutApproach />
+          primaryCTA={
+            settings.primaryCTA
+          }
+        />
 
-      {/* =========================
-          VALUES
-      ========================== */}
+        {/* =================================================
+            STORY
+        ================================================== */}
 
-      <AboutValues />
+        <AboutStory
+          businessName={
+            settings.businessName
+          }
 
-      {/* =========================
-          SERVICE AREAS
-      ========================== */}
+          shortDescription={
+            settings.shortDescription
+          }
 
-      <AboutAreas
-        areas={areas}
-        city={settings.city}
-        state={settings.state}
-      />
+          city={
+            settings.city
+          }
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+          state={
+            settings.state
+          }
+        />
 
-      <AboutCTA
-        businessName={
-          settings.businessName
-        }
-        primaryCTA={
-          settings.primaryCTA
-        }
-        phone={settings.phone}
-      />
+        {/* =================================================
+            TRUST
+        ================================================== */}
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+        <AboutTrust
+          businessName={
+            settings.businessName
+          }
+        />
 
-      <Footer
-        settings={
-          navbarFooterSettings
-        }
-      />
-    </main>
+        {/* =================================================
+            APPROACH
+        ================================================== */}
+
+        <AboutApproach />
+
+        {/* =================================================
+            VALUES
+        ================================================== */}
+
+        <AboutValues />
+
+        {/* =================================================
+            SERVICE AREAS
+        ================================================== */}
+
+        <AboutAreas
+          areas={
+            areas
+          }
+
+          city={
+            settings.city
+          }
+
+          state={
+            settings.state
+          }
+        />
+
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <AboutCTA
+          businessName={
+            settings.businessName
+          }
+
+          primaryCTA={
+            settings.primaryCTA
+          }
+
+          phone={
+            settings.phone
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            navbarFooterSettings
+          }
+        />
+      </main>
+    </>
   );
 }

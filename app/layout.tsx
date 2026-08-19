@@ -10,26 +10,65 @@ const inter = Inter({
   preload: true,
 });
 
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://gr-pest-control.vercel.app"
+).replace(/\/+$/, "");
+
+const SITE_NAME = "GR Pest Control";
+
+const SITE_DESCRIPTION =
+  "Professional pest control services for homes and businesses across Sydney. Get practical pest management solutions from GR Pest Control.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+
   title: {
-    default: "GR Pest Control",
+    default: "Pest Control Sydney | GR Pest Control",
     template: "%s | GR Pest Control",
   },
 
-  description:
-    "Professional pest control solutions for homes and businesses in Sydney.",
+  description: SITE_DESCRIPTION,
+
+  applicationName: SITE_NAME,
+
+  authors: [
+    {
+      name: SITE_NAME,
+    },
+  ],
+
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+
+  alternates: {
+    canonical: "/",
+  },
 
   robots: {
     index: true,
     follow: true,
+
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
 
   openGraph: {
-    title: "GR Pest Control",
-    description:
-      "Professional pest control solutions for homes and businesses in Sydney.",
     type: "website",
-    siteName: "GR Pest Control",
+    locale: "en_AU",
+    url: "/",
+
+    siteName: SITE_NAME,
+
+    title: "Pest Control Sydney | GR Pest Control",
+
+    description: SITE_DESCRIPTION,
+
     images: [
       {
         url: "/og-image.jpg",
@@ -42,16 +81,28 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "GR Pest Control",
-    description:
-      "Professional pest control solutions for homes and businesses in Sydney.",
+
+    title: "Pest Control Sydney | GR Pest Control",
+
+    description: SITE_DESCRIPTION,
+
     images: ["/og-image.jpg"],
   },
+
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
+
+  category: "Pest Control",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#062B63",
 };
 
 export default function RootLayout({
@@ -59,7 +110,7 @@ export default function RootLayout({
 }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="en-AU"
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-white font-sans text-[#0F172A]">

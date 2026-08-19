@@ -14,16 +14,38 @@ import SiteSettings from "@/models/SiteSettings";
 import Navbar from "@/components/shared/navigation/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 
+
+
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | GR Pest Control",
-  description:
-    "Learn how GR Pest Control collects, uses, stores and protects personal information when you use our website and services.",
-  alternates: {
-    canonical: "/privacy",
-  },
-};
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Privacy Policy | GR Pest Control",
+
+    description:
+      "Learn how GR Pest Control collects, uses, stores and protects personal information when you use our website and services.",
+
+    path: "/privacy",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Privacy Policy",
+  });
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -144,7 +166,41 @@ export default async function PrivacyPage() {
     new Date(settingsDoc.updatedAt),
   );
 
-  return (
+
+  const breadcrumbSchema =
+  createBreadcrumbSchema([
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Privacy Policy",
+      url: "/privacy",
+    },
+  ]);
+
+const webPageSchema =
+  createWebPageSchema({
+    name:
+      "Privacy Policy | GR Pest Control",
+
+    description:
+      "Learn how GR Pest Control collects, uses, stores and protects personal information when you use our website and services.",
+
+    url: "/privacy",
+  });
+
+const jsonLd =
+  createJsonLdGraph([
+    breadcrumbSchema,
+    webPageSchema,
+  ]);
+
+return (
+  <>
+    <JsonLd data={jsonLd} />
+
     <main className="min-h-screen bg-[#F8FAFC]">
       <Navbar settings={settings} />
 
@@ -1032,6 +1088,7 @@ export default async function PrivacyPage() {
 
       <Footer settings={settings} />
     </main>
+    </>
   );
 }
 

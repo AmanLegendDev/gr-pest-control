@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { connectDB } from "@/lib/db/connect";
 import SiteSettings from "@/models/SiteSettings";
 
@@ -7,29 +9,76 @@ import Footer from "@/components/shared/footer/Footer";
 import ServicesHero from "@/components/services/ServicesHero";
 import ServicesPageClient from "@/components/services/ServicesPageClient";
 
-import { getActiveServices } from "@/features/services/queries/getActiveServices";
+import {
+  getActiveServices,
+} from "@/features/services/queries/getActiveServices";
+
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
+
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
+
+import JsonLd from "@/components/seo/JsonLd";
+
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Pest Control Services",
-  description:
-    "Explore professional pest control services from GR Pest Control for homes and businesses.",
-};
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Pest Control Services Sydney | GR Pest Control",
+
+    description:
+      "Explore professional pest control services for homes and businesses across Sydney. View termite, cockroach, rodent, ant and other pest management solutions from GR Pest Control.",
+
+    path: "/services",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Professional Pest Control Services in Sydney",
+  });
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function ServicesPage() {
   await connectDB();
 
-  const [services, settingsDoc] =
-    await Promise.all([
-      getActiveServices(),
+  /* =======================================================
+     DATABASE
+  ======================================================= */
 
-      SiteSettings.findOne({
-        active: true,
-      })
-        .lean()
-        .exec(),
-    ]);
+  const [
+    services,
+    settingsDoc,
+  ] = await Promise.all([
+    getActiveServices(),
+
+    SiteSettings.findOne({
+      active: true,
+    })
+      .lean()
+      .exec(),
+  ]);
+
+  /* =======================================================
+     SETTINGS FALLBACK
+  ======================================================= */
 
   if (!settingsDoc) {
     return (
@@ -50,8 +99,14 @@ export default async function ServicesPage() {
     );
   }
 
+  /* =======================================================
+     SETTINGS VIEW MODEL
+  ======================================================= */
+
   const settings = {
-    id: String(settingsDoc._id),
+    id: String(
+      settingsDoc._id,
+    ),
 
     businessName:
       settingsDoc.businessName,
@@ -61,16 +116,22 @@ export default async function ServicesPage() {
 
     logo: settingsDoc.logo
       ? {
-          url: settingsDoc.logo.url,
+          url:
+            settingsDoc.logo.url,
+
           publicId:
             settingsDoc.logo.publicId,
-          alt: settingsDoc.logo.alt,
+
+          alt:
+            settingsDoc.logo.alt,
         }
       : undefined,
 
-    email: settingsDoc.email,
+    email:
+      settingsDoc.email,
 
-    phone: settingsDoc.phone,
+    phone:
+      settingsDoc.phone,
 
     whatsapp:
       settingsDoc.whatsapp,
@@ -110,15 +171,23 @@ export default async function ServicesPage() {
       "Get a Free Quote",
 
     currency:
-      settingsDoc.currency || "INR",
+      settingsDoc.currency ||
+      "AUD",
 
     businessHours:
       settingsDoc.businessHours?.map(
         (hour) => ({
-          day: hour.day,
-          open: hour.open,
-          close: hour.close,
-          closed: hour.closed,
+          day:
+            hour.day,
+
+          open:
+            hour.open,
+
+          close:
+            hour.close,
+
+          closed:
+            hour.closed,
         }),
       ) ?? [],
 
@@ -130,52 +199,128 @@ export default async function ServicesPage() {
 
     favicon: settingsDoc.favicon
       ? {
-          url: settingsDoc.favicon.url,
+          url:
+            settingsDoc.favicon.url,
+
           publicId:
             settingsDoc.favicon.publicId,
-          alt: settingsDoc.favicon.alt,
+
+          alt:
+            settingsDoc.favicon.alt,
         }
       : undefined,
 
     active:
       settingsDoc.active,
 
-    createdAt: new Date(
-      settingsDoc.createdAt,
-    ).toISOString(),
+    createdAt:
+      new Date(
+        settingsDoc.createdAt,
+      ).toISOString(),
 
-    updatedAt: new Date(
-      settingsDoc.updatedAt,
-    ).toISOString(),
+    updatedAt:
+      new Date(
+        settingsDoc.updatedAt,
+      ).toISOString(),
   };
 
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
+
+  const breadcrumbItems = [
+    {
+      name: "Home",
+      url: "/",
+    },
+
+    {
+      name: "Services",
+      url: "/services",
+    },
+  ];
+
+  /* =======================================================
+     JSON-LD
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      /* ---------------------------------------------------
+         BREADCRUMB
+      ---------------------------------------------------- */
+
+      createBreadcrumbSchema(
+        breadcrumbItems,
+      ),
+
+      /* ---------------------------------------------------
+         WEB PAGE
+      ---------------------------------------------------- */
+
+      createWebPageSchema({
+        name:
+          "Pest Control Services Sydney | GR Pest Control",
+
+        description:
+          "Explore professional pest control services for homes and businesses across Sydney. View practical pest management solutions from GR Pest Control.",
+
+        url:
+          "/services",
+      }),
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVIGATION
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar settings={settings} />
-
-      {/* =========================
-          HERO
-      ========================== */}
-
-      <ServicesHero />
-
-      {/* =========================
-          SERVICES
-      ========================== */}
-
-      <ServicesPageClient
-        services={services}
+      <JsonLd
+        data={jsonLd}
       />
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVIGATION
+        ================================================== */}
 
-      <Footer settings={settings} />
-    </main>
+        <Navbar
+          settings={
+            settings
+          }
+        />
+
+        {/* =================================================
+            HERO
+        ================================================== */}
+
+        <ServicesHero />
+
+        {/* =================================================
+            SERVICES
+        ================================================== */}
+
+        <ServicesPageClient
+          services={
+            services
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            settings
+          }
+        />
+      </main>
+    </>
   );
 }

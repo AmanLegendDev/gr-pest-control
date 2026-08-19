@@ -16,51 +16,89 @@ export const revalidate = 3600;
 
 type SitemapItem = MetadataRoute.Sitemap[number];
 
+/* =========================================================
+   STATIC INDEXABLE PAGES
+========================================================= */
+
+const STATIC_PAGES: SitemapItem[] = [
+  {
+    url: `${SITE_URL}/`,
+    changeFrequency: "weekly",
+    priority: 1,
+  },
+
+  {
+    url: `${SITE_URL}/services`,
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+
+  {
+    url: `${SITE_URL}/service-areas`,
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+
+  {
+    url: `${SITE_URL}/about`,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  },
+
+  {
+    url: `${SITE_URL}/contact`,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  },
+
+  {
+    url: `${SITE_URL}/blog`,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  },
+
+  {
+    url: `${SITE_URL}/gallery`,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  },
+
+  {
+    url: `${SITE_URL}/faq`,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+
+  {
+    url: `${SITE_URL}/testimonials`,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+
+  {
+    url: `${SITE_URL}/quote`,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  },
+
+  {
+    url: `${SITE_URL}/privacy`,
+    changeFrequency: "yearly",
+    priority: 0.3,
+  },
+
+  {
+    url: `${SITE_URL}/terms`,
+    changeFrequency: "yearly",
+    priority: 0.3,
+  },
+];
+
+/* =========================================================
+   SITEMAP
+========================================================= */
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPages: SitemapItem[] = [
-    {
-      url: `${SITE_URL}/`,
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-
-    {
-      url: `${SITE_URL}/services`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-
-    {
-      url: `${SITE_URL}/service-areas`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-
-    {
-      url: `${SITE_URL}/blog`,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-
-    {
-      url: `${SITE_URL}/gallery`,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-
-    {
-      url: `${SITE_URL}/faq`,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-
-    {
-      url: `${SITE_URL}/quote`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-  ];
-
   try {
     await connectDB();
 
@@ -68,8 +106,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       services,
       serviceAreas,
       blogs,
-      gallery,
+      galleryItems,
     ] = await Promise.all([
+      /* ---------------------------------------------------
+         ACTIVE SERVICES
+      ---------------------------------------------------- */
+
       Service.find({
         active: true,
       })
@@ -80,6 +122,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .lean()
         .exec(),
 
+      /* ---------------------------------------------------
+         ACTIVE SERVICE AREAS
+      ---------------------------------------------------- */
+
       ServiceArea.find({
         active: true,
       })
@@ -89,6 +135,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })
         .lean()
         .exec(),
+
+      /* ---------------------------------------------------
+         PUBLISHED BLOG POSTS
+      ---------------------------------------------------- */
 
       Blog.find({
         published: true,
@@ -101,6 +151,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .lean()
         .exec(),
 
+      /* ---------------------------------------------------
+         ACTIVE GALLERY ITEMS
+      ---------------------------------------------------- */
+
       Gallery.find({
         active: true,
       })
@@ -112,54 +166,125 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .exec(),
     ]);
 
-    const servicePages: SitemapItem[] =
-      services.map((service) => ({
-        url: `${SITE_URL}/services/${service.slug}`,
-        lastModified: service.updatedAt
-          ? new Date(service.updatedAt)
-          : undefined,
-        changeFrequency: "monthly",
-        priority: 0.8,
-      }));
+    /* =====================================================
+       SERVICE PAGES
+    ====================================================== */
 
-    const serviceAreaPages: SitemapItem[] =
-      serviceAreas.map((area) => ({
-        url: `${SITE_URL}/service-areas/${area.slug}`,
-        lastModified: area.updatedAt
-          ? new Date(area.updatedAt)
-          : undefined,
-        changeFrequency: "monthly",
-        priority: 0.8,
-      }));
+    const servicePages: SitemapItem[] =
+      services.map(
+        (service) => ({
+          url:
+            `${SITE_URL}/services/${service.slug}`,
+
+          lastModified:
+            service.updatedAt
+              ? new Date(
+                  service.updatedAt,
+                )
+              : undefined,
+
+          changeFrequency:
+            "monthly",
+
+          priority:
+            0.8,
+        }),
+      );
+
+    /* =====================================================
+       SERVICE AREA PAGES
+    ====================================================== */
+
+    const serviceAreaPages:
+      SitemapItem[] =
+      serviceAreas.map(
+        (area) => ({
+          url:
+            `${SITE_URL}/service-areas/${area.slug}`,
+
+          lastModified:
+            area.updatedAt
+              ? new Date(
+                  area.updatedAt,
+                )
+              : undefined,
+
+          changeFrequency:
+            "monthly",
+
+          priority:
+            0.8,
+        }),
+      );
+
+    /* =====================================================
+       BLOG PAGES
+    ====================================================== */
 
     const blogPages: SitemapItem[] =
-      blogs.map((blog) => ({
-        url: `${SITE_URL}/blog/${blog.slug}`,
-        lastModified:
-          blog.updatedAt
-            ? new Date(blog.updatedAt)
-            : blog.publishedAt
-              ? new Date(blog.publishedAt)
-              : undefined,
-        changeFrequency: "monthly",
-        priority: 0.7,
-      }));
+      blogs.map(
+        (blog) => ({
+          url:
+            `${SITE_URL}/blog/${blog.slug}`,
 
-    const galleryPages: SitemapItem[] =
-      gallery.map((item) => ({
-        url: `${SITE_URL}/gallery/${item.slug}`,
-        lastModified: item.updatedAt
-          ? new Date(item.updatedAt)
-          : undefined,
-        changeFrequency: "monthly",
-        priority: 0.6,
-      }));
+          lastModified:
+            blog.updatedAt
+              ? new Date(
+                  blog.updatedAt,
+                )
+              : blog.publishedAt
+                ? new Date(
+                    blog.publishedAt,
+                  )
+                : undefined,
+
+          changeFrequency:
+            "monthly",
+
+          priority:
+            0.7,
+        }),
+      );
+
+    /* =====================================================
+       GALLERY PAGES
+    ====================================================== */
+
+    const galleryPages:
+      SitemapItem[] =
+      galleryItems.map(
+        (item) => ({
+          url:
+            `${SITE_URL}/gallery/${item.slug}`,
+
+          lastModified:
+            item.updatedAt
+              ? new Date(
+                  item.updatedAt,
+                )
+              : undefined,
+
+          changeFrequency:
+            "monthly",
+
+          priority:
+            0.6,
+        }),
+      );
+
+    /* =====================================================
+       FINAL SITEMAP
+    ====================================================== */
 
     return [
-      ...staticPages,
+      ...STATIC_PAGES,
+
       ...servicePages,
+
       ...serviceAreaPages,
+
       ...blogPages,
+
       ...galleryPages,
     ];
   } catch (error) {
@@ -169,9 +294,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
 
     /*
-     * Keep sitemap usable even if MongoDB
-     * is temporarily unavailable.
+     * Keep sitemap valid even if
+     * MongoDB is temporarily unavailable.
      */
-    return staticPages;
+    return STATIC_PAGES;
   }
 }

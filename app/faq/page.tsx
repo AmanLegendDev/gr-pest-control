@@ -13,39 +13,67 @@ import FAQCTA from "@/components/faq/FAQCTA";
 
 import { getSiteSettings } from "@/features/about/queries/getSiteSettings";
 
-import { getActiveFAQs } from "@/features/faq/queries/getActiveFAQs";
-import { getFAQCategories } from "@/features/faq/queries/getFAQCategories";
+import {
+  getActiveFAQs,
+} from "@/features/faq/queries/getActiveFAQs";
 
-export const metadata: Metadata = {
-  title:
-    "Frequently Asked Questions | GR Pest Control",
+import {
+  getFAQCategories,
+} from "@/features/faq/queries/getFAQCategories";
 
-  description:
-    "Find answers to common questions about GR Pest Control services, treatments, preparation, safety and pest control solutions.",
+import {
+  createStaticPageMetadata,
+} from "@/lib/seo/metadata";
 
-  alternates: {
-    canonical: "/faq",
-  },
+import {
+  createJsonLdGraph,
+  createBreadcrumbSchema,
+  createWebPageSchema,
+} from "@/lib/seo/schemas";
 
-  openGraph: {
-    title:
-      "Frequently Asked Questions | GR Pest Control",
+import JsonLd from "@/components/seo/JsonLd";
 
-    description:
-      "Answers to common questions about GR Pest Control services and treatments.",
-
-    type: "website",
-  },
-};
+/* =========================================================
+   PAGE CONFIG
+========================================================= */
 
 export const dynamic =
   "force-dynamic";
+
+/* =========================================================
+   METADATA
+========================================================= */
+
+export const metadata: Metadata =
+  createStaticPageMetadata({
+    title:
+      "Pest Control FAQs Sydney | GR Pest Control",
+
+    description:
+      "Find answers to common questions about pest control services, treatments, preparation, safety and pest management for homes and businesses across Sydney.",
+
+    path: "/faq",
+
+    image:
+      "/og-image.jpg",
+
+    imageAlt:
+      "GR Pest Control — Frequently Asked Questions",
+  });
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 interface FAQPageProps {
   searchParams: Promise<{
     category?: string;
   }>;
 }
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function FAQPage({
   searchParams,
@@ -60,15 +88,25 @@ export default async function FAQPage({
 
   await connectDB();
 
+  /* =======================================================
+     DATABASE
+  ======================================================= */
+
   const [
     settings,
     allFAQs,
     categories,
   ] = await Promise.all([
     getSiteSettings(),
+
     getActiveFAQs(),
+
     getFAQCategories(),
   ]);
+
+  /* =======================================================
+     SETTINGS
+  ======================================================= */
 
   if (!settings) {
     throw new Error(
@@ -76,11 +114,9 @@ export default async function FAQPage({
     );
   }
 
-  /*
-   * =========================
-   * CATEGORY FILTER
-   * =========================
-   */
+  /* =======================================================
+     CATEGORY FILTER
+  ======================================================= */
 
   const activeCategory =
     categories.find(
@@ -104,14 +140,13 @@ export default async function FAQPage({
         )
       : allFAQs;
 
-  /*
-   * =========================
-   * NAVBAR / FOOTER SETTINGS
-   * =========================
-   */
+  /* =======================================================
+     NAVBAR / FOOTER SETTINGS
+  ======================================================= */
 
   const navbarFooterSettings = {
-    id: settings.id,
+    id:
+      settings.id,
 
     businessName:
       settings.businessName,
@@ -119,7 +154,8 @@ export default async function FAQPage({
     shortDescription:
       settings.shortDescription,
 
-    logo: settings.logo,
+    logo:
+      settings.logo,
 
     email:
       settings.email,
@@ -173,18 +209,40 @@ export default async function FAQPage({
       settings.updatedAt,
   };
 
-  /*
-   * =========================
-   * FAQ JSON-LD
-   * =========================
-   */
+  /* =======================================================
+     FAQ CONTENT DATA
+  ======================================================= */
 
-  const faqSchema = {
-    "@context":
-      "https://schema.org",
+  const faqItems =
+    filteredFAQs.map(
+      (faq) => ({
+        id:
+          faq.id,
 
+        question:
+          faq.question,
+
+        answer:
+          faq.answer,
+
+        category:
+          faq.category,
+
+        featured:
+          faq.featured,
+      }),
+    );
+
+  /* =======================================================
+     FAQ JSON-LD
+  ======================================================= */
+
+  const faqPageSchema = {
     "@type":
       "FAQPage",
+
+    "@id":
+      `${process.env.NEXT_PUBLIC_SITE_URL || "https://gr-pest-control.vercel.app"}/faq#faqpage`,
 
     mainEntity:
       filteredFAQs.map(
@@ -206,130 +264,163 @@ export default async function FAQPage({
       ),
   };
 
-  /*
-   * =========================
-   * FAQ CONTENT DATA
-   * =========================
-   */
+  /* =======================================================
+     BREADCRUMBS
+  ======================================================= */
 
-  const faqItems =
-    filteredFAQs.map(
-      (faq) => ({
-        id: faq.id,
+  const breadcrumbSchema =
+    createBreadcrumbSchema([
+      {
+        name:
+          "Home",
 
-        question:
-          faq.question,
+        url:
+          "/",
+      },
 
-        answer:
-          faq.answer,
+      {
+        name:
+          "Frequently Asked Questions",
 
-        category:
-          faq.category,
+        url:
+          "/faq",
+      },
+    ]);
 
-        featured:
-          faq.featured,
-      }),
-    );
+  /* =======================================================
+     WEB PAGE
+  ======================================================= */
+
+  const webPageSchema =
+    createWebPageSchema({
+      name:
+        "Pest Control FAQs Sydney | GR Pest Control",
+
+      description:
+        "Find answers to common questions about pest control services, treatments, preparation, safety and pest management for homes and businesses across Sydney.",
+
+      url:
+        "/faq",
+    });
+
+  /* =======================================================
+     JSON-LD GRAPH
+  ======================================================= */
+
+  const jsonLd =
+    createJsonLdGraph([
+      breadcrumbSchema,
+      webPageSchema,
+      faqPageSchema,
+    ]);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
-      {/* =========================
-          NAVBAR
-      ========================== */}
+    <>
+      {/* ===================================================
+          STRUCTURED DATA
+      ==================================================== */}
 
-      <Navbar
-        settings={
-          navbarFooterSettings
+      <JsonLd
+        data={
+          jsonLd
         }
       />
 
-      {/* =========================
-          BREADCRUMB
-          ALWAYS BELOW NAVBAR
-      ========================== */}
+      <main className="min-h-screen bg-[#F8FAFC]">
+        {/* =================================================
+            NAVBAR
+        ================================================== */}
 
-      <FAQBreadcrumb />
+        <Navbar
+          settings={
+            navbarFooterSettings
+          }
+        />
 
-      {/* =========================
-          HERO
-      ========================== */}
+        {/* =================================================
+            BREADCRUMB
+        ================================================== */}
 
-      <FAQHero
-        businessName={
-          settings.businessName
-        }
-        faqCount={
-          filteredFAQs.length
-        }
-        categoryCount={
-          categories.length
-        }
-      />
+        <FAQBreadcrumb />
 
-      {/* =========================
-          CATEGORY NAV
-      ========================== */}
+        {/* =================================================
+            HERO
+        ================================================== */}
 
-      <FAQCategoryNav
-        categories={
-          categories
-        }
-        activeCategory={
-          activeCategory
-        }
-      />
+        <FAQHero
+          businessName={
+            settings.businessName
+          }
 
-      {/* =========================
-          SEARCH + POPULAR
-          + ACCORDION
-      ========================== */}
+          faqCount={
+            filteredFAQs.length
+          }
 
-      <FAQContent
-        items={faqItems}
-      />
+          categoryCount={
+            categories.length
+          }
+        />
 
-      {/* =========================
-          FINAL CTA
-      ========================== */}
+        {/* =================================================
+            CATEGORY NAV
+        ================================================== */}
 
-      <FAQCTA
-        businessName={
-          settings.businessName
-        }
-        primaryCTA={
-          settings.primaryCTA
-        }
-        phone={
-          settings.phone
-        }
-        whatsapp={
-          settings.whatsapp
-        }
-      />
+        <FAQCategoryNav
+          categories={
+            categories
+          }
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+          activeCategory={
+            activeCategory
+          }
+        />
 
-      <Footer
-        settings={
-          navbarFooterSettings
-        }
-      />
+        {/* =================================================
+            FAQ CONTENT
+        ================================================== */}
 
-      {/* =========================
-          FAQ JSON-LD
-      ========================== */}
+        <FAQContent
+          items={
+            faqItems
+          }
+        />
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              faqSchema,
-            ),
-        }}
-      />
-    </main>
+        {/* =================================================
+            FINAL CTA
+        ================================================== */}
+
+        <FAQCTA
+          businessName={
+            settings.businessName
+          }
+
+          primaryCTA={
+            settings.primaryCTA
+          }
+
+          phone={
+            settings.phone
+          }
+
+          whatsapp={
+            settings.whatsapp
+          }
+        />
+
+        {/* =================================================
+            FOOTER
+        ================================================== */}
+
+        <Footer
+          settings={
+            navbarFooterSettings
+          }
+        />
+      </main>
+    </>
   );
 }
