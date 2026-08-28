@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { connectDB } from "@/lib/db/connect";
 
 import { authOptions } from "@/lib/auth/auth-options";
 
@@ -65,6 +66,9 @@ export default async function QuoteRequestsPage({
 
   const search =
     params.search?.trim() ?? "";
+
+
+      await connectDB();
 
   const requests =
     await getQuoteRequests({
