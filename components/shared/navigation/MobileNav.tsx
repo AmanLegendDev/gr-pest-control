@@ -34,10 +34,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: "Gallery",
     href: "/gallery",
   },
-  {
-    label: "Testimonials",
-    href: "/testimonials",
-  },
+
   {
     label: "Blog",
     href: "/blog",

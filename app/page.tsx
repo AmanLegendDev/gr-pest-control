@@ -455,11 +455,7 @@ export default async function HomePage() {
         gallery={gallery}
       />
 
-      <TestimonialsPreview
-        testimonials={
-          testimonials
-        }
-      />
+    
 
       <FAQPreview
         faqs={faqs}
