@@ -30,6 +30,11 @@ export const metadata: Metadata = {
 
   description: SITE_DESCRIPTION,
 
+    verification: {
+    google:
+      "NoQCEVO8vcHFSKucCXp5yjx-J35uSsct_9xEpagnj5k",
+  },
+
   applicationName: SITE_NAME,
 
   authors: [
@@ -37,6 +42,8 @@ export const metadata: Metadata = {
       name: SITE_NAME,
     },
   ],
+
+  
 
   creator: SITE_NAME,
   publisher: SITE_NAME,
