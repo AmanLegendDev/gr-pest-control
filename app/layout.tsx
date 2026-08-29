@@ -12,7 +12,7 @@ const inter = Inter({
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://gr-pest-control.vercel.app"
+  "https://www.grpestscontrol.com.au/"
 ).replace(/\/+$/, "");
 
 const SITE_NAME = "GR Pest Control";
@@ -30,10 +30,15 @@ export const metadata: Metadata = {
 
   description: SITE_DESCRIPTION,
 
-    verification: {
-    google:
-      "NoQCEVO8vcHFSKucCXp5yjx-J35uSsct_9xEpagnj5k",
+  verification: {
+  google:
+    "NoQCEVO8vcHFSKucCXp5yjx-J35uSsct_9xEpagnj5k",
+
+  other: {
+    "msvalidate.01":
+      "6C56034BC8A4093CC1774D376348B66E",
   },
+},
 
   applicationName: SITE_NAME,
 
