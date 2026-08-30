@@ -57,6 +57,9 @@ import {
   createWebSiteSchema,
 } from "@/lib/seo/schemas";
 
+
+import FloatingCallButton from "@/components/home/FloatingCallButton";
+
 /* =========================================================
    SEO CONFIG
 ========================================================= */
@@ -472,6 +475,11 @@ export default async function HomePage() {
       <Footer
         settings={settings}
       />
+
+      <FloatingCallButton
+  phone={settings.phone}
+  businessName={settings.businessName}
+/>
     </main>
   );
 }
