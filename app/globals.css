@@ -1,2 +1,23 @@
 @import "tailwindcss";
+
 @plugin "@tailwindcss/typography";
+
+:root {
+  --font-eb-garamond:
+    "EB Garamond",
+    serif;
+}
+
+html,
+body {
+  font-family:
+    var(--font-eb-garamond),
+    serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

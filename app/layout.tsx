@@ -1,13 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { EB_Garamond } from "next/font/google";
 
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
   subsets: ["latin"],
   display: "swap",
   preload: true,
+  weight: [
+    "400",
+    "500",
+    "600",
+    "700",
+  ],
 });
 
 const SITE_URL = (
@@ -24,31 +30,33 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Pest Control Sydney | GR Pest Control",
-    template: "%s | GR Pest Control",
+    default:
+      "Pest Control Sydney | GR Pest Control",
+    template:
+      "%s | GR Pest Control",
   },
 
-  description: SITE_DESCRIPTION,
+  description:
+    SITE_DESCRIPTION,
 
   verification: {
-  google:
-    "NoQCEVO8vcHFSKucCXp5yjx-J35uSsct_9xEpagnj5k",
+    google:
+      "NoQCEVO8vcHFSKucCXp5yjx-J35uSsct_9xEpagnj5k",
 
-  other: {
-    "msvalidate.01":
-      "6C56034BC8A4093CC1774D376348B66E",
+    other: {
+      "msvalidate.01":
+        "6C56034BC8A4093CC1774D376348B66E",
+    },
   },
-},
 
-  applicationName: SITE_NAME,
+  applicationName:
+    SITE_NAME,
 
   authors: [
     {
       name: SITE_NAME,
     },
   ],
-
-  
 
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -74,19 +82,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_AU",
     url: "/",
-
     siteName: SITE_NAME,
 
-    title: "Pest Control Sydney | GR Pest Control",
+    title:
+      "Pest Control Sydney | GR Pest Control",
 
-    description: SITE_DESCRIPTION,
+    description:
+      SITE_DESCRIPTION,
 
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "GR Pest Control — Professional Pest Control in Sydney",
+        alt:
+          "GR Pest Control — Professional Pest Control in Sydney",
       },
     ],
   },
@@ -94,11 +104,15 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
 
-    title: "Pest Control Sydney | GR Pest Control",
+    title:
+      "Pest Control Sydney | GR Pest Control",
 
-    description: SITE_DESCRIPTION,
+    description:
+      SITE_DESCRIPTION,
 
-    images: ["/og-image.jpg"],
+    images: [
+      "/og-image.jpg",
+    ],
   },
 
   formatDetection: {
@@ -107,7 +121,8 @@ export const metadata: Metadata = {
     address: true,
   },
 
-  category: "Pest Control",
+  category:
+    "Pest Control",
 };
 
 export const viewport: Viewport = {
@@ -123,9 +138,16 @@ export default function RootLayout({
   return (
     <html
       lang="en-AU"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${ebGaramond.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-white font-sans text-[#0F172A]">
+      <body
+        className="
+          min-h-full
+          bg-white
+          font-serif
+          text-[#0F172A]
+        "
+      >
         <main className="min-h-full flex-1">
           {children}
         </main>
