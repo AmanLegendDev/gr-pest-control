@@ -463,12 +463,39 @@ export default function Footer({
                       {locationParts.join(", ")}
                     </span>
                   </span>
+                  
                 </div>
               )}
             </div>
           </div>
         </div>
 
+{/* =====================================================
+    GOOGLE BUSINESS MAP
+===================================================== */}
+
+<div
+  className="
+    mt-16
+    overflow-hidden
+    rounded-[28px]
+    border
+    border-white/10
+    bg-white/5
+    shadow-2xl
+  "
+>
+  <div className="aspect-[16/9] w-full">
+    <iframe
+      title={`${settings.businessName} location on Google Maps`}
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6865986.541988565!2d150.05236179999997!3d-32.8311501!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x87109fa1a388a6ab%3A0x1b1998696af44754!2sGR%20Pest%20and%20Termite%20services!5e0!3m2!1sen!2sau!4v1788158481384!5m2!1sen!2sau"
+      className="h-full w-full border-0"
+      loading="lazy"
+      allowFullScreen
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  </div>
+</div>
         {/* =====================================================
             HOURS + WHATSAPP
         ====================================================== */}
