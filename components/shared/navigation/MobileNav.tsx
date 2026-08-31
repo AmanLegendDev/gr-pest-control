@@ -179,30 +179,26 @@ transition={{
   ease: "easeOut",
 }}  
             className="
-              fixed
-              inset-x-3
-              top-3
-              z-50
+  fixed
+  inset-x-3
+  top-[76px]
+  z-50
 
-              max-h-[calc(100dvh-1.5rem)]
+  max-h-[calc(100dvh-5.5rem)]
 
-              overflow-hidden
+  overflow-hidden
+  rounded-[30px]
+  border
+  border-slate-200/90
+  bg-white
+  p-3
+  shadow-[0_30px_100px_rgba(6,43,99,0.22)]
 
-              rounded-[30px]
-              border
-              border-slate-200/90
-
-              bg-white
-
-              p-3
-
-              shadow-[0_30px_100px_rgba(6,43,99,0.22)]
-
-              sm:inset-x-5
-              sm:top-5
-              sm:max-h-[calc(100dvh-2.5rem)]
-              sm:p-4
-            "
+  sm:inset-x-5
+  sm:top-[58px]
+  sm:max-h-[calc(100dvh-4.5rem)]
+  sm:p-4
+"
           >
             {/* =================================================
                 HEADER — DOES NOT SCROLL

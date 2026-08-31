@@ -60,6 +60,8 @@ import {
 
 import FloatingCallButton from "@/components/home/FloatingCallButton";
 
+import BusinessTopBar from "@/components/shared/navigation/BusinessTopBar";
+
 /* =========================================================
    SEO CONFIG
 ========================================================= */
@@ -427,6 +429,15 @@ export default async function HomePage() {
       {/* =====================================================
           WEBSITE
       ====================================================== */}
+
+
+      {/* =====================================================
+    BUSINESS TOP BAR
+===================================================== */}
+
+<BusinessTopBar
+  settings={settings}
+/>
 
       <Navigation />
 

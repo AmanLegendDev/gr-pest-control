@@ -71,7 +71,17 @@ export default function Navbar({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-5 sm:px-5 sm:pt-4">
+      <header
+  className="
+    fixed
+    inset-x-0
+    top-[84px]
+    z-50
+    px-3
+    sm:top-10
+    sm:px-5
+  "
+>
 <div className="mx-auto max-w-[1440px]">
 <div className="flex min-h-[76px] items-center gap-4 rounded-[26px] border border-slate-200/80 bg-white/95 px-4 shadow-[0_10px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:min-h-[80px] sm:px-5 lg:rounded-[30px] lg:px-6">            {/* Brand */}
 <Link
