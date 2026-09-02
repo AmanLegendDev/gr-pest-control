@@ -181,7 +181,7 @@ transition={{
             className="
   fixed
   inset-x-3
-  top-[76px]
+  top-[12px]
   z-50
 
   max-h-[calc(100dvh-5.5rem)]

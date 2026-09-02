@@ -21,3 +21,71 @@ textarea,
 select {
   font: inherit;
 }
+
+.service-description h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #062b63;
+}
+
+.service-description h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #062b63;
+}
+
+.service-description p {
+  margin-top: 0.9rem;
+  margin-bottom: 0.9rem;
+  color: #475569;
+  line-height: 1.9;
+}
+
+.service-description ul {
+  margin-top: 0.9rem;
+  margin-bottom: 1rem;
+  padding-left: 1.4rem;
+  list-style: disc;
+}
+
+.service-description ol {
+  margin-top: 0.9rem;
+  margin-bottom: 1rem;
+  padding-left: 1.4rem;
+  list-style: decimal;
+}
+
+.service-description li {
+  margin-top: 0.4rem;
+  color: #475569;
+}
+
+.service-description strong {
+  font-weight: 800;
+  color: #062b63;
+}
+
+.service-description em {
+  font-style: italic;
+}
+
+.service-description a {
+  color: #0878e8;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.service-description blockquote {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid #0878e8;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  color: #475569;
+}

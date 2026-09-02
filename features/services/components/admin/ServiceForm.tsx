@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm,Controller } from "react-hook-form";
 
 import { createService } from "../../actions/create-service";
 import {
   createServiceSchema,
   type CreateServiceInput,
 } from "../../schemas/service-schema";
+
+import Editor from "@/components/editor/Editor";
 
 import ServiceBasicInformation from "./ServiceBasicInformation";
 import ServiceBenefits from "./ServiceBenefits";
@@ -57,6 +59,7 @@ export default function ServiceForm() {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
@@ -298,28 +301,32 @@ export default function ServiceForm() {
               </div>
 
               {/* DESCRIPTION */}
-              <div>
-                <label
-                  htmlFor="description"
-                  className="mb-2 block text-sm font-semibold text-[#0F172A]"
-                >
-                  Full Description *
-                </label>
+             {/* DESCRIPTION */}
+<div>
+  <label
+    htmlFor="description"
+    className="mb-2 block text-sm font-semibold text-[#0F172A]"
+  >
+    Full Description *
+  </label>
 
-                <textarea
-                  id="description"
-                  rows={9}
-                  {...register("description")}
-                  placeholder="Describe the service in detail..."
-                  className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm leading-6 text-[#0F172A] outline-none transition placeholder:text-slate-400 focus:border-[#0878E8] focus:ring-2 focus:ring-blue-100"
-                />
+  <Controller
+    name="description"
+    control={control}
+    render={({ field }) => (
+      <Editor
+        value={field.value}
+        onChange={field.onChange}
+      />
+    )}
+  />
 
-                {errors.description?.message && (
-                  <p className="mt-1.5 text-sm text-red-600">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
+  {errors.description?.message && (
+    <p className="mt-1.5 text-sm text-red-600">
+      {errors.description.message}
+    </p>
+  )}
+</div>
 
               {/* ICON */}
               <div>

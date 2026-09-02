@@ -133,17 +133,20 @@ export default function ServiceDetailHero({
             {shortDescription}
           </p>
 
-          <p
-            className="
-              mt-4
-              text-sm
-              leading-7
-              text-slate-500
-              sm:text-base
-            "
-          >
-            {description}
-          </p>
+           <div
+  className="
+    service-description
+    mt-6
+    max-w-none
+    text-sm
+    leading-7
+    text-slate-600
+    sm:text-base
+  "
+  dangerouslySetInnerHTML={{
+    __html: description,
+  }}
+/>
 
           {/* Starting price */}
 <div

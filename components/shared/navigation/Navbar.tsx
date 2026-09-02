@@ -71,16 +71,19 @@ export default function Navbar({
 
   return (
     <>
-      <header
-  className="
+   <header
+  className={`
     fixed
     inset-x-0
-    top-[84px]
     z-50
     px-3
-    sm:top-10
     sm:px-5
-  "
+   ${
+  pathname === "/"
+    ? "top-[96px] sm:top-12"
+    : "top-3 sm:top-4"
+}
+  `}
 >
 <div className="mx-auto max-w-[1440px]">
 <div className="flex min-h-[76px] items-center gap-4 rounded-[26px] border border-slate-200/80 bg-white/95 px-4 shadow-[0_10px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:min-h-[80px] sm:px-5 lg:rounded-[30px] lg:px-6">            {/* Brand */}

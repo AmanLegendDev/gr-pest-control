@@ -20,6 +20,7 @@ import {
 
 import { updateService } from "@/features/services/actions/updateService";
 import { createService } from "@/features/services/actions/create-service";
+import Editor from "@/components/editor/Editor";
 
 interface ServiceImage {
   url: string;
@@ -584,28 +585,22 @@ export default function ServiceForm({
         </Field>
 
         <Field
-          label="Full description"
-          required
-        >
-          <textarea
-            value={form.description}
-            onChange={(event) =>
-              updateField(
-                "description",
-                event.target.value,
-              )
-            }
-            rows={8}
-            maxLength={10000}
-            placeholder="Detailed service description..."
-            className={textareaClass}
-          />
+  label="Full description"
+  required
+  hint="Use rich formatting for the service description."
+>
+  <Editor
+    value={form.description}
+    onChange={(html) =>
+      updateField("description", html)
+    }
+  />
 
-          <CharacterCount
-            value={form.description}
-            max={10000}
-          />
-        </Field>
+  <CharacterCount
+    value={form.description.replace(/<[^>]*>/g, "")}
+    max={10000}
+  />
+</Field>
         <Field
   label="Service price"
   required
