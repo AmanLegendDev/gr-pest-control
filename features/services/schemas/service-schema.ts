@@ -53,6 +53,10 @@ export const createServiceSchema = z.object({
     .min(20, "Description is required.")
     .max(10000),
 
+    price: z
+  .number()
+  .min(0, "Price cannot be negative."),
+
   heroImage: imageSchema.optional(),
 
   icon: z.string().trim().max(80).optional(),

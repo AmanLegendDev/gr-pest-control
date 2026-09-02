@@ -139,6 +139,9 @@ export default async function EditServicePage({
     description:
       service.description,
 
+        price:
+    service.price ?? 0,
+
     heroImage:
       service.heroImage
         ? {

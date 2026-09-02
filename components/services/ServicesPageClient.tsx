@@ -21,6 +21,9 @@ interface Service {
   category: string;
   shortDescription: string;
   description: string;
+
+  price: number;
+
   heroImage?: ServiceImage;
   icon?: string;
   pestTypes?: string[];

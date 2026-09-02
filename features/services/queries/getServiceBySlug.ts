@@ -45,6 +45,8 @@ export async function getServiceBySlug(
 
     description: service.description,
 
+    price: service.price ?? 0,
+
     heroImage: service.heroImage
       ? {
           url: service.heroImage.url,

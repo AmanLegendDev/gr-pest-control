@@ -180,11 +180,76 @@ export default function ServicesPreview({
                     {service.title}
                   </h3>
 
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
-                    {service.shortDescription}
-                  </p>
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+  {service.shortDescription}
+</p>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+{/* Starting price */}
+<div
+  className="
+    mt-5
+    flex
+    items-center
+    justify-between
+    rounded-2xl
+    border
+    border-blue-100
+    bg-gradient-to-r
+    from-blue-50/80
+    to-white
+    px-4
+    py-3.5
+    shadow-[0_6px_20px_rgba(8,120,232,0.06)]
+  "
+>
+  <div>
+    <p
+      className="
+        text-[9px]
+        font-extrabold
+        uppercase
+        tracking-[0.14em]
+        text-slate-400
+      "
+    >
+      Starting from
+    </p>
+
+    <p
+      className="
+        mt-0.5
+        text-xl
+        font-extrabold
+        tracking-[-0.03em]
+        text-[#062B63]
+      "
+    >
+      ${(service.price ?? 0).toLocaleString("en-AU")}
+      <span className="ml-1.5 text-[10px] font-bold text-slate-400">
+        AUD
+      </span>
+    </p>
+  </div>
+
+  <span
+    className="
+      rounded-full
+      bg-white
+      px-2.5
+      py-1
+      text-[9px]
+      font-extrabold
+      uppercase
+      tracking-[0.1em]
+      text-[#0878E8]
+      shadow-sm
+    "
+  >
+    From
+  </span>
+</div>
+
+<div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                     <span className="flex items-center gap-2 text-xs font-bold text-slate-500">
                       <CheckCircle2
                         size={15}

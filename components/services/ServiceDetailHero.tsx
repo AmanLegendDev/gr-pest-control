@@ -10,6 +10,7 @@ interface ServiceDetailHeroProps {
   category: string;
   shortDescription: string;
   description: string;
+  price: number;
   heroImage?: {
     url: string;
     alt: string;
@@ -34,6 +35,7 @@ export default function ServiceDetailHero({
   category,
   shortDescription,
   description,
+  price,
   heroImage,
   pestTypes,
 }: ServiceDetailHeroProps) {
@@ -142,6 +144,80 @@ export default function ServiceDetailHero({
           >
             {description}
           </p>
+
+          {/* Starting price */}
+<div
+  className="
+    mt-6
+    inline-flex
+    w-full
+    max-w-md
+    items-center
+    justify-between
+    rounded-[22px]
+    border
+    border-blue-100
+    bg-white
+    px-5
+    py-4
+    shadow-[0_10px_35px_rgba(8,120,232,0.08)]
+  "
+>
+  <div>
+    <p
+      className="
+        text-[10px]
+        font-extrabold
+        uppercase
+        tracking-[0.16em]
+        text-slate-400
+      "
+    >
+      Starting from
+    </p>
+
+    <div className="mt-1 flex items-baseline gap-2">
+      <span
+        className="
+          text-3xl
+          font-extrabold
+          tracking-[-0.04em]
+          text-[#062B63]
+        "
+      >
+        ${(price ?? 0).toLocaleString("en-AU")}
+      </span>
+
+      <span
+        className="
+          text-xs
+          font-bold
+          text-slate-400
+        "
+      >
+        AUD
+      </span>
+    </div>
+  </div>
+
+  <span
+    className="
+      rounded-full
+      border
+      border-blue-100
+      bg-blue-50
+      px-3
+      py-1.5
+      text-[9px]
+      font-extrabold
+      uppercase
+      tracking-[0.12em]
+      text-[#0878E8]
+    "
+  >
+    Initial service
+  </span>
+</div>
 
           {/* Pest types */}
           {visiblePests.length > 0 && (

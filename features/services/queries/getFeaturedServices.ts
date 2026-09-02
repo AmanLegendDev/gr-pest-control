@@ -7,10 +7,12 @@ export interface FeaturedService {
   slug: string;
   category: string;
   shortDescription: string;
+  price: number;
   heroImage?: {
     url: string;
     alt: string;
   };
+  featured: boolean;
 }
 
 export async function getFeaturedServices(
@@ -28,6 +30,7 @@ export async function getFeaturedServices(
         slug: 1,
         category: 1,
         shortDescription: 1,
+        price: 1,
         heroImage: 1,
         featured: 1,
         sortOrder: 1,
@@ -47,12 +50,14 @@ export async function getFeaturedServices(
       slug: service.slug,
       category: service.category,
       shortDescription: service.shortDescription,
+      price: service.price ?? 0,
       heroImage: service.heroImage
         ? {
             url: service.heroImage.url,
             alt: service.heroImage.alt,
           }
         : undefined,
+      featured: service.featured,
     }));
   } catch (error) {
     console.error(

@@ -19,6 +19,7 @@ import {
 } from "react";
 
 import { updateService } from "@/features/services/actions/updateService";
+import { createService } from "@/features/services/actions/create-service";
 
 interface ServiceImage {
   url: string;
@@ -47,7 +48,7 @@ interface ServiceFormData {
 
   shortDescription: string;
   description: string;
-
+ price: number;
   heroImage?: ServiceImage;
 
   icon: string;
@@ -78,6 +79,7 @@ const EMPTY_DATA: ServiceFormData = {
   category: "",
   shortDescription: "",
   description: "",
+  price: 0,
   heroImage: undefined,
   icon: "",
   pestTypes: [],
@@ -444,17 +446,24 @@ export default function ServiceForm({
           "Service updated successfully.",
         );
       } else {
-        /*
-         * Create action will be wired
-         * when the Add Service page
-         * is created.
-         */
-        setError(
-          "Create mode is not connected yet.",
-        );
+  const result = await createService(payload);
 
-        return;
-      }
+  if (!result.success) {
+    setError(
+      result.message ||
+        "Unable to create service.",
+    );
+
+    return;
+  }
+
+  setSuccess(
+    "Service created successfully.",
+  );
+
+  setForm(EMPTY_DATA);
+  setImagePreview("");
+}
     } catch (error) {
       console.error(
         "SERVICE_FORM_SUBMIT_ERROR",
@@ -597,6 +606,32 @@ export default function ServiceForm({
             max={10000}
           />
         </Field>
+        <Field
+  label="Service price"
+  required
+  hint="Price in AUD. Enter 0 if no fixed price."
+>
+  <div className="relative">
+    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+      $
+    </span>
+
+    <input
+      type="number"
+      min={0}
+      step="0.01"
+      value={form.price}
+      onChange={(event) =>
+        updateField(
+          "price",
+          Number(event.target.value)
+        )
+      }
+      placeholder="250"
+      className={`${inputClass} pl-9`}
+    />
+  </div>
+</Field>
       </FormSection>
 
       {/* =========================

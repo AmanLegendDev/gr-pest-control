@@ -27,6 +27,7 @@ const DEFAULT_VALUES: CreateServiceInput = {
   category: "",
   shortDescription: "",
   description: "",
+    price: 0, // ✅ YE ADD KARO
   heroImage: undefined,
   icon: "",
   pestTypes: [],

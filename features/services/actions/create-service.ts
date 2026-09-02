@@ -72,6 +72,7 @@ export async function createService(
       category: data.category,
       shortDescription: data.shortDescription,
       description: data.description,
+      price: data.price,
       heroImage: data.heroImage,
       icon: data.icon ?? "",
       pestTypes: data.pestTypes,

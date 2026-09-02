@@ -17,6 +17,7 @@ interface FeaturedService {
   slug: string;
   category: string;
   shortDescription: string;
+  price: number;
   heroImage?: ServiceImage;
   pestTypes?: string[];
   benefits?: string[];
@@ -338,6 +339,68 @@ export default function FeaturedServices({
                     >
                       {service.shortDescription}
                     </p>
+
+                    {/* Starting price */}
+<div
+  className="
+    mt-5
+    flex
+    items-center
+    justify-between
+    rounded-2xl
+    border
+    border-blue-100
+    bg-gradient-to-r
+    from-blue-50/80
+    to-white
+    px-4
+    py-3.5
+    shadow-[0_6px_20px_rgba(8,120,232,0.06)]
+  "
+>
+  <div>
+    <p
+      className="
+        text-[9px]
+        font-extrabold
+        uppercase
+        tracking-[0.14em]
+        text-slate-400
+      "
+    >
+      Starting from
+    </p>
+
+    <p
+      className="
+        mt-0.5
+        text-xl
+        font-extrabold
+        tracking-[-0.03em]
+        text-[#062B63]
+      "
+    >
+      ${(service.price ?? 0).toLocaleString("en-AU")}
+    </p>
+  </div>
+
+  <span
+    className="
+      rounded-full
+      bg-white
+      px-2.5
+      py-1
+      text-[9px]
+      font-extrabold
+      uppercase
+      tracking-[0.1em]
+      text-[#0878E8]
+      shadow-sm
+    "
+  >
+    AUD
+  </span>
+</div>
 
                     {/* Pest types */}
                     {visiblePests.length > 0 && (

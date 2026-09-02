@@ -25,6 +25,8 @@ export interface IService extends Document {
   shortDescription: string;
   description: string;
 
+    price: number;
+
   heroImage?: IServiceImage;
 
   icon?: string;
@@ -161,6 +163,13 @@ const ServiceSchema = new Schema<IService>(
       trim: true,
       maxlength: 10000,
     },
+
+    price: {
+  type: Number,
+  required: true,
+  min: 0,
+  default: 0,
+},
 
     heroImage: {
       type: ServiceImageSchema,

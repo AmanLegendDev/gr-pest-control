@@ -419,6 +419,10 @@ export default async function ServiceDetailPage({
             service.shortDescription
           }
 
+            price={
+    service.price ?? 0
+  }
+
           description={
             service.description
           }

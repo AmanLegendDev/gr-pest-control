@@ -17,6 +17,7 @@ interface Service {
   category: string;
   shortDescription: string;
   description: string;
+  price: number;
   heroImage?: ServiceImage;
   icon?: string;
   pestTypes?: string[];
@@ -262,6 +263,7 @@ export default function ServicesGrid({
                   shortDescription={
                     service.shortDescription
                   }
+                  price={service.price ?? 0}
                   heroImage={
                     service.heroImage
                   }

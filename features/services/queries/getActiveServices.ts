@@ -11,6 +11,7 @@ export async function getActiveServices() {
       category: 1,
       shortDescription: 1,
       description: 1,
+      price: 1,
       heroImage: 1,
       icon: 1,
       pestTypes: 1,
@@ -42,7 +43,11 @@ export async function getActiveServices() {
     shortDescription:
       service.shortDescription,
 
-    description: service.description,
+    description:
+      service.description,
+
+    price:
+      service.price ?? 0,
 
     heroImage: service.heroImage
       ? {
@@ -55,27 +60,35 @@ export async function getActiveServices() {
 
     icon: service.icon || "",
 
-    pestTypes: service.pestTypes ?? [],
+    pestTypes:
+      service.pestTypes ?? [],
 
-    benefits: service.benefits ?? [],
+    benefits:
+      service.benefits ?? [],
 
-    process: (service.process ?? [])
-      .slice()
-      .sort(
-        (a, b) =>
-          a.sortOrder - b.sortOrder,
-      ),
+    process:
+      (service.process ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            a.sortOrder -
+            b.sortOrder,
+        ),
 
-    faqs: (service.faqs ?? [])
-      .slice()
-      .sort(
-        (a, b) =>
-          a.sortOrder - b.sortOrder,
-      ),
+    faqs:
+      (service.faqs ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            a.sortOrder -
+            b.sortOrder,
+        ),
 
-    featured: service.featured,
+    featured:
+      service.featured,
 
-    sortOrder: service.sortOrder,
+    sortOrder:
+      service.sortOrder,
 
     seoTitle:
       service.seoTitle || "",
