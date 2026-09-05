@@ -55,23 +55,18 @@ export default function ServiceDetailHero({
         lg:py-20
       "
     >
-      <div
-        className="
-          mx-auto
-          grid
-          max-w-7xl
-          items-center
-          gap-10
-          lg:grid-cols-[1.05fr_0.95fr]
-          lg:gap-14
-        "
-      >
+    <div
+  className="
+    mx-auto
+    max-w-7xl
+  "
+>
         {/* =========================
             CONTENT
         ========================== */}
 
-        <div className="max-w-2xl">
-          <div
+<div className="mx-auto w-full max-w-5xl">
+            <div
             className="
               inline-flex
               items-center
@@ -133,20 +128,7 @@ export default function ServiceDetailHero({
             {shortDescription}
           </p>
 
-           <div
-  className="
-    service-description
-    mt-6
-    max-w-none
-    text-sm
-    leading-7
-    text-slate-600
-    sm:text-base
-  "
-  dangerouslySetInnerHTML={{
-    __html: description,
-  }}
-/>
+    
 
           {/* Starting price */}
 <div
@@ -341,26 +323,31 @@ export default function ServiceDetailHero({
         ========================== */}
 
         <div
-          className="
-            relative
-            overflow-hidden
-            rounded-[30px]
-            border
-            border-slate-200
-            bg-white
-            p-2
-            shadow-[0_20px_60px_rgba(15,23,42,0.09)]
-          "
-        >
-          <div
-            className="
-              relative
-              aspect-[4/3]
-              overflow-hidden
-              rounded-[24px]
-              bg-[#EEF6FF]
-            "
-          >
+  className="
+    relative
+    mx-auto
+    mt-10
+    w-full
+    max-w-6xl
+    overflow-hidden
+    rounded-[30px]
+    border
+    border-slate-200
+    bg-white
+    p-2
+    shadow-[0_20px_60px_rgba(15,23,42,0.09)]
+    sm:mt-12
+  "
+>
+        <div
+  className="
+    relative
+    aspect-[16/9]
+    overflow-hidden
+    rounded-[24px]
+    bg-[#EEF6FF]
+  "
+>
             {heroImage?.url ? (
               <img
                 src={heroImage.url}
