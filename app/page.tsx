@@ -475,6 +475,10 @@ export default async function HomePage() {
         faqs={faqs}
       />
 
+      <TestimonialsPreview testimonials={[]} />
+
+      
+
       <BlogPreview
         blogs={blogs}
       />
